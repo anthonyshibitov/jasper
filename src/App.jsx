@@ -1,48 +1,15 @@
 import { useState, useEffect } from "react";
 import { analyze, returnHexOfBuffer } from "./peAnalyze";
+import { createPe } from "./peDef";
 import "./App.css";
 
-const _IMAGE_NT_HEADER = {
-  Signature: null,
-  _IMAGE_FILE_HEADER: null,
-  _IMAGE_OPTIONAL_HEADER32: null,
-}
-
-const _IMAGE_DOS_HEADER = {
-  e_magic: null,
-  e_cblp: null,
-  e_cp: null,
-  e_crlc: null,
-  e_cparhdr: null,
-  e_minalloc: null,
-  e_maxalloc: null,
-  e_ss: null,
-  e_sp: null,
-  e_csum: null,
-  e_ip: null,
-  e_cs: null,
-  e_lfarlc: null,
-  e_ovno: null,
-  e_res: null,
-  e_oemid: null,
-  e_oeminfo: null,
-  e_res2: null,
-  e_lfanew: null,
-};
-
-const pe_skeleton = {
-  _IMAGE_DOS_HEADER: _IMAGE_DOS_HEADER,
-  _IMAGE_NT_HEADER: _IMAGE_NT_HEADER,
-  _IMAGE_OPTIONAL_HEADER: null,
-  _IMAGE_SECTION_HEADERS: [],
-  _IMAGE_SECTIONS: [],
-};
-
-function hex2a(hex) {
+function hex2a(hex, trim) {
   var str = "";
   for (var i = 0; i < hex.length; i += 2) {
     var v = parseInt(hex.substr(i, 2), 16);
-    if (v) str += String.fromCharCode(v);
+    if (v){
+        str += String.fromCharCode(v);
+    } 
   }
   return str.split("").reverse().join("");
 }
@@ -51,10 +18,11 @@ function App() {
   const [size, setSize] = useState(0);
   const [name, setName] = useState("null");
   const [type, setType] = useState("null");
-  const [pe, setPe] = useState(pe_skeleton);
+  const [pe, setPe] = useState(createPe());
   const [hex, setHex] = useState("");
   const [magicAscii, setMagicAscii] = useState("");
   const [signatureAscii, setSignatureAscii] = useState("");
+  const [headerOffset, setHeaderOffset] = useState("");
 
   useEffect(() => {
     const uploadElement = document.getElementById("file-upload");
@@ -63,7 +31,7 @@ function App() {
       setSize(file.size);
       setName(file.name);
       setType(file.type);
-      setPe(pe_skeleton);
+      setPe(createPe());
       setMagicAscii("");
       setSignatureAscii("");
 
@@ -104,8 +72,11 @@ function App() {
             _IMAGE_NT_HEADER: {
               ...pe._IMAGE_NT_HEADER,
               Signature: result._IMAGE_NT_HEADER.Signature,
+              Machine: result._IMAGE_NT_HEADER.Machine,
+              NumberOfSections: result._IMAGE_NT_HEADER.NumberOfSections,
             }
           });
+          setHeaderOffset((result._IMAGE_DOS_HEADER.e_lfanew).replace(/^0+/g, ''));
           setSignatureAscii(hex2a(result._IMAGE_NT_HEADER.Signature));
         } else {
           alert("This is not a valid PE file.");
@@ -154,7 +125,9 @@ function App() {
       <div>
         IMAGE_NT_HEADER:
         <div>offset, name, value</div>
-        <div>0x{pe._IMAGE_DOS_HEADER.e_lfanew} Signature {pe._IMAGE_NT_HEADER.Signature}, ascii: {signatureAscii}</div>
+        <div>0x{headerOffset} Signature {pe._IMAGE_NT_HEADER.Signature}, ascii: {signatureAscii}</div>
+        <div>0x{(parseInt(headerOffset, 16) + 4).toString(16).toUpperCase()} Machine {pe._IMAGE_NT_HEADER.Machine}</div>
+        <div>0x{(parseInt(headerOffset, 16) + 6).toString(16).toUpperCase()} NumberOfSections {pe._IMAGE_NT_HEADER.NumberOfSections}</div>
       </div>
     </>
   );

@@ -1,47 +1,8 @@
-const _IMAGE_NT_HEADER = {
-    Signature: null,
-    _IMAGE_FILE_HEADER: null,
-    _IMAGE_OPTIONAL_HEADER32: null,
-}
-
-const _IMAGE_DOS_HEADER = {
-    e_magic: null,
-    e_cblp: null,
-    e_cp: null,
-    e_crlc: null,
-    e_cparhdr: null,
-    e_minalloc: null,
-    e_maxalloc: null,
-    e_ss: null,
-    e_sp: null,
-    e_csum: null,
-    e_ip: null,
-    e_cs: null,
-    e_lfarlc: null,
-    e_ovno: null,
-    e_res: null,
-    e_oemid: null,
-    e_oeminfo: null,
-    e_res2: null,
-    e_lfanew: null,
-  };
-
-const pe = {
-  _IMAGE_DOS_HEADER: _IMAGE_DOS_HEADER,
-  _IMAGE_NT_HEADER: _IMAGE_NT_HEADER,
-  _IMAGE_OPTIONAL_HEADER: null,
-  _IMAGE_SECTION_HEADERS: [],
-  _IMAGE_SECTIONS: [],
-};
-
-// 64 bytes
-
-
-// function peSkeleton(){
-//     this._IMAGE_DOS_HEADER = null;
-// }
+import { createPe } from "./peDef";
 
 function analyze(dataBuffer) {
+  const pe = createPe();
+  
   pe._IMAGE_DOS_HEADER.e_magic = retrieveWORD(dataBuffer, 0x00);
   pe._IMAGE_DOS_HEADER.e_cblp = retrieveWORD(dataBuffer, 0x02);
   pe._IMAGE_DOS_HEADER.e_cp = retrieveWORD(dataBuffer, 0x04);
@@ -63,6 +24,9 @@ function analyze(dataBuffer) {
   pe._IMAGE_DOS_HEADER.e_lfanew = retrieveDWORD(dataBuffer, 0x3C);
 
   pe._IMAGE_NT_HEADER.Signature = retrieveDWORD(dataBuffer, parseInt(pe._IMAGE_DOS_HEADER.e_lfanew, 16));
+  pe._IMAGE_NT_HEADER.Machine = retrieveWORD(dataBuffer,parseInt(pe._IMAGE_DOS_HEADER.e_lfanew, 16) + 4);
+  pe._IMAGE_NT_HEADER.NumberOfSections = retrieveWORD(dataBuffer,parseInt(pe._IMAGE_DOS_HEADER.e_lfanew, 16) + 6);
+
   return pe;
 }
 
