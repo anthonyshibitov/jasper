@@ -96,11 +96,11 @@ const createDosHeader = function () {
 const createPe = function () {
   return {
     _IMAGE_DOS_HEADER: createDosHeader(),
-    _IMAGE_NT_HEADER: createNtHeader(),
+    _IMAGE_NT_HEADER: createNtHeader(false),
     _IMAGE_SECTION_HEADERS: [],
     _IMAGE_SECTIONS: [],
     JasperInfo: {},
   };
 };
 
-export { createPe };
+export { createPe, createImageDataDirectory };

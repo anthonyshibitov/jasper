@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { analyze, returnHexOfBuffer } from "./peAnalyze";
 import { createPe } from "./peDef";
+import DosHeader from "./components/DosHeader";
+import NtHeader from "./components/NtHeader";
 import "./App.css";
 
 function hex2a(hex, trim) {
   var str = "";
   for (var i = 0; i < hex.length; i += 2) {
     var v = parseInt(hex.substr(i, 2), 16);
-    if (v){
-        str += String.fromCharCode(v);
-    } 
+    if (v) {
+      str += String.fromCharCode(v);
+    }
   }
   return str.split("").reverse().join("");
 }
@@ -37,10 +39,11 @@ function App() {
 
       const reader = new FileReader();
 
-      reader.readAsBinaryString(file);
+      reader.readAsArrayBuffer(file);
 
       reader.onload = () => {
-        const result = analyze(reader.result);
+        const resultArray = new Uint8Array(reader.result);
+        const result = analyze(resultArray);
         // SUPER MEMORY INTENSIVE!!
         // setHex(returnHexOfBuffer(reader.result));
         if (hex2a(result._IMAGE_DOS_HEADER.e_magic) == "MZ") {
@@ -50,7 +53,6 @@ function App() {
             _IMAGE_DOS_HEADER: {
               ...pe._IMAGE_DOS_HEADER,
               e_magic: result._IMAGE_DOS_HEADER.e_magic,
-              e_lfanew: result._IMAGE_DOS_HEADER.e_lfanew,
               e_cblp: result._IMAGE_DOS_HEADER.e_cblp,
               e_cp: result._IMAGE_DOS_HEADER.e_cp,
               e_crlc: result._IMAGE_DOS_HEADER.e_crlc,
@@ -68,15 +70,68 @@ function App() {
               e_oemid: result._IMAGE_DOS_HEADER.e_oemid,
               e_oeminfo: result._IMAGE_DOS_HEADER.e_oeminfo,
               e_res2: result._IMAGE_DOS_HEADER.e_res2,
+              e_lfanew: result._IMAGE_DOS_HEADER.e_lfanew,
             },
             _IMAGE_NT_HEADER: {
               ...pe._IMAGE_NT_HEADER,
               Signature: result._IMAGE_NT_HEADER.Signature,
-              Machine: result._IMAGE_NT_HEADER.Machine,
-              NumberOfSections: result._IMAGE_NT_HEADER.NumberOfSections,
-            }
+              _IMAGE_FILE_HEADER: {
+                ...pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER,
+                Machine: result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.Machine,
+                NumberOfSections:
+                  result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+                TimeDateStamp:
+                  result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.TimeDateStamp,
+                PointerToSymbolTable:
+                  result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER
+                    .PointerToSymbolTable,
+                NumberOfSymbols:
+                  result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSymbols,
+                SizeOfOptionalHeader:
+                  result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER
+                    .SizeOfOptionalHeader,
+                Characteristics:
+                  result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.Characteristics,
+              },
+              _IMAGE_OPTIONAL_HEADER32: {
+                ...pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32,
+                Magic: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
+                MajorLinkerVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorLinkerVersion,
+                MinorLinkerVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorLinkerVersion,
+                SizeOfCode: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfCode,
+                SizeOfInitializedData: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfInitializedData,
+                SizeOfUninitializedData: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfUninitializedData,
+                AddressOfEntryPoint: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.AddressOfEntryPoint,
+                BaseOfCode: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.BaseOfCode,
+                BaseOfData: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.BaseOfData,
+                ImageBase: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.ImageBase,
+                SectionAlignment: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SectionAlignment,
+                FileAlignment: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.FileAlignment,
+                MajorOperatingSystemVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorOperatingSystemVersion,
+                MinorOperatingSystemVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorOperatingSystemVersion,
+                MajorImageVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorImageVersion,
+                MinorImageVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorImageVersion,
+                MajorSubsystemVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorSubsystemVersion,
+                MinorSubsystemVersion: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorSubsystemVersion,
+                Win32VersionValue: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Win32VersionValue,
+                SizeOfImage: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfImage,
+                SizeOfHeaders: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeaders,
+                CheckSum: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.CheckSum,
+                Subsystem: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Subsystem,
+                DllCharacteristics: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DllCharacteristics,
+                SizeOfStackReserve: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfStackReserve,
+                SizeOfStackCommit: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfStackCommit,
+                SizeOfHeapReserve: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeapReserve,
+                SizeOfHeapCommit: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeapCommit,
+                LoaderFlags: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.LoaderFlags,
+                NumberOfRvaAndSizes: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.NumberOfRvaAndSizes,
+                DataDirectory: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory,
+              }
+            },
           });
-          setHeaderOffset((result._IMAGE_DOS_HEADER.e_lfanew).replace(/^0+/g, ''));
+          setHeaderOffset(
+            result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, "")
+          );
           setSignatureAscii(hex2a(result._IMAGE_NT_HEADER.Signature));
         } else {
           alert("This is not a valid PE file.");
@@ -96,39 +151,9 @@ function App() {
       <div>HEX DUMP:</div>
       <div className="hex-dump-wrapper">{hex ? hex : "disabled"}</div>
       <hr></hr>
-      <div>
-        IMAGE_DOS_HEADER:
-        <div>offset, name, value</div>
-        <div>
-          0x00 e_magic {pe._IMAGE_DOS_HEADER.e_magic}, ascii: {magicAscii}
-        </div>
-        <div>0x02 e_cblp {pe._IMAGE_DOS_HEADER.e_cblp}</div>
-        <div>0x04 e_cp {pe._IMAGE_DOS_HEADER.e_cp}</div>
-        <div>0x06 e_crlc {pe._IMAGE_DOS_HEADER.e_crlc}</div>
-        <div>0x08 e_cparhdr {pe._IMAGE_DOS_HEADER.e_cparhdr}</div>
-        <div>0x0A e_minalloc {pe._IMAGE_DOS_HEADER.e_minalloc}</div>
-        <div>0x0C e_maxalloc {pe._IMAGE_DOS_HEADER.e_maxalloc}</div>
-        <div>0x0E e_ss {pe._IMAGE_DOS_HEADER.e_ss}</div>
-        <div>0x10 e_sp {pe._IMAGE_DOS_HEADER.e_sp}</div>
-        <div>0x12 e_csum {pe._IMAGE_DOS_HEADER.e_csum}</div>
-        <div>0x14 e_ip {pe._IMAGE_DOS_HEADER.e_ip}</div>
-        <div>0x16 e_cs {pe._IMAGE_DOS_HEADER.e_cs}</div>
-        <div>0x18 e_lfarlc {pe._IMAGE_DOS_HEADER.e_lfarlc}</div>
-        <div>0x1A e_ovno {pe._IMAGE_DOS_HEADER.e_ovno}</div>
-        <div>0x1C e_res {pe._IMAGE_DOS_HEADER.e_res}</div>
-        <div>0x24 e_oemid {pe._IMAGE_DOS_HEADER.e_oemid}</div>
-        <div>0x26 e_oeminfo {pe._IMAGE_DOS_HEADER.e_oeminfo}</div>
-        <div>0x28 e_res2 {pe._IMAGE_DOS_HEADER.e_res2}</div>
-        <div>0x3C e_lfanew {pe._IMAGE_DOS_HEADER.e_lfanew}</div>
-      </div>
+      <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii}/>
       <hr></hr>
-      <div>
-        IMAGE_NT_HEADER:
-        <div>offset, name, value</div>
-        <div>0x{headerOffset} Signature {pe._IMAGE_NT_HEADER.Signature}, ascii: {signatureAscii}</div>
-        <div>0x{(parseInt(headerOffset, 16) + 4).toString(16).toUpperCase()} Machine {pe._IMAGE_NT_HEADER.Machine}</div>
-        <div>0x{(parseInt(headerOffset, 16) + 6).toString(16).toUpperCase()} NumberOfSections {pe._IMAGE_NT_HEADER.NumberOfSections}</div>
-      </div>
+      <NtHeader ntHeader={pe._IMAGE_NT_HEADER} signatureAscii={signatureAscii} headerOffset={headerOffset}/>
     </>
   );
 }
