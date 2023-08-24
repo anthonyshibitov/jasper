@@ -2,6 +2,38 @@
 /* ------------------------------------- */
 /* ------------------------------------- */
 
+const createImageImportDescriptor = function() {
+    return {
+        OriginalFirstThunk: null, //DWORD
+        TimeDateStamp: null, //DWORD
+        ForwarderChain: null, //DWORD
+        Name: null, //DWORD
+        FirstThunk: null, //DWORD
+    }
+}
+
+const createSectionHeader = function(){
+    return {
+        Name: null, //8 BYTES, QWORD
+        PhyAdd_VirSiz: null, //DWORD
+        VirtualAddress: null, //DWORD
+        SizeOfRawData: null, //DWORD
+        PointerToRawData: null, //DWORD
+        PointerToRelocations: null, //DWORD
+        PointerToLinenumbers: null, //DWORD
+        NumberOfRelocations: null, //WORD
+        NumberOfLinenumbers: null, //WORD
+        Characteristics: null, //DWORD
+        JASPER_SECTION_OFFSET: null,
+    }
+}
+
+const createSectionTable = function(){
+    return {
+        SectionTable: null, //ARRAY OF _IMAGE_SECTION_HEADERs
+    }
+}
+
 const createImageDataDirectory = function () {
   return {
     VirtualAddress: null, //DWORD
@@ -103,4 +135,4 @@ const createPe = function () {
   };
 };
 
-export { createPe, createImageDataDirectory };
+export { createPe, createImageDataDirectory, createSectionHeader, createSectionTable, createImageImportDescriptor };

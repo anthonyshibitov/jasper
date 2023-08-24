@@ -4,6 +4,7 @@ import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
 import NtHeader from "./components/NtHeader";
 import "./App.css";
+import SectionHeaders from "./components/SectionHeaders";
 
 function hex2a(hex, trim) {
   var str = "";
@@ -128,6 +129,7 @@ function App() {
                 DataDirectory: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory,
               }
             },
+            _IMAGE_SECTION_HEADERS: result._IMAGE_SECTION_HEADERS,
           });
           setHeaderOffset(
             result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, "")
@@ -144,6 +146,7 @@ function App() {
     <>
       <input type="file" name="file-upload" id="file-upload" />
       {/* <div>{currentPe}</div> */}
+      <h3>WARNING! Only for use with 32 bit binaries. Analyzing 64 bit binaries may cause crashing or other unpredictable behavior.</h3>
       <div>size in bytes: {size}</div>
       <div>name: {name}</div>
       <div>type: {type}</div>
@@ -154,6 +157,7 @@ function App() {
       <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii}/>
       <hr></hr>
       <NtHeader ntHeader={pe._IMAGE_NT_HEADER} signatureAscii={signatureAscii} headerOffset={headerOffset}/>
+      <SectionHeaders sectionHeaders={pe._IMAGE_SECTION_HEADERS}/>
     </>
   );
 }

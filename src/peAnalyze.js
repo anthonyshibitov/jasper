@@ -1,4 +1,4 @@
-import { createPe, createImageDataDirectory } from "./peDef";
+import { createPe, createImageDataDirectory, createSectionHeader, createImageImportDescriptor } from "./peDef";
 
 function analyze(dataBuffer) {
   const pe = createPe();
@@ -70,12 +70,73 @@ function analyze(dataBuffer) {
 
   for(let i = 0; i < dataDirectoryCount; i++){
     const newDataDirectory = createImageDataDirectory();
+
     newDataDirectory.VirtualAddress = retrieveDWORD(dataBuffer, dataDirectoryOffset);
     dataDirectoryOffset += 4;
     newDataDirectory.Size = retrieveDWORD(dataBuffer, dataDirectoryOffset);
     dataDirectoryOffset += 4;
+
     pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory.push(newDataDirectory);
   }
+
+  let sectionHeaderOffset = dataDirectoryOffset;
+
+  const numberOfSections = pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections;
+
+  for(let i = 0; i < numberOfSections; i++){
+    const newSectionHeader = new createSectionHeader();
+    newSectionHeader.Name = retrieveStringXBytes(dataBuffer, sectionHeaderOffset, 8, 8);
+    newSectionHeader.PhyAdd_VirSize = retrieveDWORD(dataBuffer, sectionHeaderOffset + 8);
+    newSectionHeader.VirtualAddress = retrieveDWORD(dataBuffer, sectionHeaderOffset + 12);
+    newSectionHeader.SizeOfRawData = retrieveDWORD(dataBuffer, sectionHeaderOffset + 16);
+    newSectionHeader.PointerToRawData = retrieveDWORD(dataBuffer, sectionHeaderOffset + 20);
+    newSectionHeader.PointerToRelocations = retrieveDWORD(dataBuffer, sectionHeaderOffset + 24);
+    newSectionHeader.PointerToLinenumbers = retrieveDWORD(dataBuffer, sectionHeaderOffset + 28);
+    newSectionHeader.NumberOfRelocations = retrieveDWORD(dataBuffer, sectionHeaderOffset + 32);
+    newSectionHeader.NumberOfLinenumbers = retrieveDWORD(dataBuffer, sectionHeaderOffset + 34);
+    newSectionHeader.Characteristics = retrieveDWORD(dataBuffer, sectionHeaderOffset + 36);
+    newSectionHeader.JASPER_SECTION_OFFSET = sectionHeaderOffset.toString(16);
+
+    pe._IMAGE_SECTION_HEADERS.push(newSectionHeader);
+    sectionHeaderOffset += 40;
+  }
+
+  //Populate Import Directory information
+  const firstImportDirectoryEntryRVA = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].VirtualAddress;
+
+  //Loop through sections to find which section the first IDT entry is
+  let importSection;
+  for(let i = 0; i < pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections; i++){
+    if(parseInt(firstImportDirectoryEntryRVA, 16) > parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) && parseInt(firstImportDirectoryEntryRVA, 16) < parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) + parseInt(pe._IMAGE_SECTION_HEADERS[i].PhyAdd_VirSize, 16)){
+      importSection = i;
+    }
+  }
+
+  // Get first descriptor offset
+  const firstImportDirectoryEntryFileOffset = convertRVAToFileOffset(firstImportDirectoryEntryRVA, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData, 8);
+  console.log("First import directory table entry file offset:", firstImportDirectoryEntryFileOffset);
+
+  //Get number of import descriptors. Size of import drectory table / 20 (structure size) - 1 (last one is null)
+  const numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].Size, 16) / 20) - 1;
+  console.log("number of import descriptors:", numberOfImportDescriptors);
+
+  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable = [];
+
+  let descriptorOffset = parseInt(firstImportDirectoryEntryFileOffset, 16);
+
+  for(let i = 0; i < numberOfImportDescriptors; i++){
+    const imageImportDescriptor = new createImageImportDescriptor();
+    imageImportDescriptor.OriginalFirstThunk = retrieveDWORD(dataBuffer, descriptorOffset);
+    imageImportDescriptor.TimeDateStamp = retrieveDWORD(dataBuffer, descriptorOffset + 4);
+    imageImportDescriptor.ForwarderChain = retrieveDWORD(dataBuffer, descriptorOffset + 8);
+    imageImportDescriptor.Name = retrieveDWORD(dataBuffer, descriptorOffset + 12);
+    imageImportDescriptor.FirstThunk = retrieveDWORD(dataBuffer, descriptorOffset + 16);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable.push(imageImportDescriptor);
+
+    descriptorOffset += 20;
+  }
+
+  console.log(pe);
 
   return pe;
 }
@@ -95,6 +156,14 @@ function retrieveXBytes(buffer, offset, length, padding){
         returnBytes += buffer[offset + i].toString(16).padStart(2, '0'); //may not work.
     }
     return returnBytes.toUpperCase();
+}
+
+function retrieveStringXBytes(buffer, offset, length, padding){
+  let returnBytes = "";
+  for(let i = 0; i < length; i++){
+      returnBytes += buffer[offset + i].toString(16).padStart(2, '0'); //may not work.
+  }
+  return returnBytes.toUpperCase();
 }
 
 function retrieveDWORD(buffer, offset) {
@@ -124,4 +193,20 @@ function calcAddressOffset(address, offset) {
   return (parseInt(address, 16) + offset).toString(16).toUpperCase();
 }
 
-export { analyze, returnHexOfBuffer, calcAddressOffset};
+function convertRVAToFileOffset(rva, sectionVirtualAddress, sectionPointerToRawData, padding){
+  let decimalOffset = (parseInt(rva, 16) - parseInt(sectionVirtualAddress, 16)) + parseInt(sectionPointerToRawData, 16);
+  return decimalOffset.toString(16).toUpperCase().padStart(padding, '0');
+}
+
+function hex2string(hex, trim) {
+  var str = "";
+  for (var i = 0; i < hex.length; i += 2) {
+    var v = parseInt(hex.substr(i, 2), 16);
+    if (v) {
+      str += String.fromCharCode(v);
+    }
+  }
+  return str;
+}
+
+export { analyze, returnHexOfBuffer, calcAddressOffset, hex2string};
