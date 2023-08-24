@@ -2,8 +2,16 @@
 /* ------------------------------------- */
 /* ------------------------------------- */
 
+const createImageBoundImportDescriptor = function(){
+    return {
+        TimeDateStamp: null, //DWORD
+        OffsetModuleName: null, //WORD
+        NumberOfModuleForwarderRefs: null, //WORD
+    }
+}
+
 const createImageThunkData = function(){
-    
+
 }
 
 const createImageImportDescriptor = function() {
@@ -13,6 +21,8 @@ const createImageImportDescriptor = function() {
         ForwarderChain: null, //DWORD
         Name: null, //DWORD
         FirstThunk: null, //DWORD
+        ImportNameList: [],
+        ImportRVAList: [],
     }
 }
 
@@ -42,6 +52,7 @@ const createImageDataDirectory = function () {
   return {
     VirtualAddress: null, //DWORD
     Size: null, //DWORD
+    ImportDirectoryTable: [],
   };
 };
 

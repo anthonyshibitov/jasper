@@ -135,24 +135,35 @@ function analyze(dataBuffer) {
 
     const DllNameOffset = convertRVAToFileOffset(imageImportDescriptor.Name, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
     const DllName = getNullTerminatedString(dataBuffer, parseInt(DllNameOffset, 16));
+    imageImportDescriptor.NameString = DllName;
     console.log(`Import ${i}`, DllName);
 
-    //Enumerate over function names
-    //Get INT addresses
-
-    const functionImportRVAs = [];
+    //Get list of RVAs for name imports
+    const functionNameImportRVAs = [];
+    //Get list of RVAs for import address table
+    const functionAddressImportRVAs = [];
     
     let originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.OriginalFirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
     while(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)) != '00000000'){
-      functionImportRVAs.push(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
+      functionNameImportRVAs.push(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
       originalThunkFileOffset = (parseInt(originalThunkFileOffset, 16) + 4).toString(16);
     }
 
-    functionImportRVAs.forEach((rva, index) => {
+    let thunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.FirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+    while(retrieveDWORD(dataBuffer, parseInt(thunkFileOffset, 16)) != '00000000'){
+      functionAddressImportRVAs.push(thunkFileOffset.toUpperCase());
+      thunkFileOffset = (parseInt(thunkFileOffset, 16) + 4).toString(16);
+    }
+
+    functionNameImportRVAs.forEach((rva) => {
       const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
       const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
       const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
-      console.log(`Function ${index}, Hint: ${hint}, Name: ${name}`);
+      imageImportDescriptor.ImportNameList.push({hint, name});
+    })
+
+    functionAddressImportRVAs.forEach((rva, index) => {
+      imageImportDescriptor.ImportRVAList.push(rva);
     })
 
     descriptorOffset += 20;
