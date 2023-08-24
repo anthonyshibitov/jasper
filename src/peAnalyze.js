@@ -133,8 +133,31 @@ function analyze(dataBuffer) {
     imageImportDescriptor.FirstThunk = retrieveDWORD(dataBuffer, descriptorOffset + 16);
     pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable.push(imageImportDescriptor);
 
+    const DllNameOffset = convertRVAToFileOffset(imageImportDescriptor.Name, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+    const DllName = getNullTerminatedString(dataBuffer, parseInt(DllNameOffset, 16));
+    console.log(`Import ${i}`, DllName);
+
+    //Enumerate over function names
+    //Get INT addresses
+
+    const functionImportRVAs = [];
+    
+    let originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.OriginalFirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+    while(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)) != '00000000'){
+      functionImportRVAs.push(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
+      originalThunkFileOffset = (parseInt(originalThunkFileOffset, 16) + 4).toString(16);
+    }
+
+    functionImportRVAs.forEach((rva, index) => {
+      const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+      const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
+      const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
+      console.log(`Function ${index}, Hint: ${hint}, Name: ${name}`);
+    })
+
     descriptorOffset += 20;
   }
+
 
   console.log(pe);
 
@@ -171,7 +194,7 @@ function retrieveDWORD(buffer, offset) {
 }
 
 function retrieveWORD(buffer, offset) {
-  return ((buffer[offset + 1]).toString(16).padStart(2, '0') + (buffer[offset]).toString(16)).padStart(2, '0').toUpperCase();
+  return ((buffer[offset + 1]).toString(16) + (buffer[offset]).toString(16)).padStart(4, '0').toUpperCase();
 }
 
 function retrieveBYTE(buffer, offset) {
@@ -198,7 +221,7 @@ function convertRVAToFileOffset(rva, sectionVirtualAddress, sectionPointerToRawD
   return decimalOffset.toString(16).toUpperCase().padStart(padding, '0');
 }
 
-function hex2string(hex, trim) {
+function hex2string(hex) {
   var str = "";
   for (var i = 0; i < hex.length; i += 2) {
     var v = parseInt(hex.substr(i, 2), 16);
@@ -207,6 +230,17 @@ function hex2string(hex, trim) {
     }
   }
   return str;
+}
+
+function getNullTerminatedString(buffer, address){
+  let result = '';
+  let i = 0;
+  while(buffer[address + i] != 0){
+    // console.log(buffer[address + i]);
+    result += String.fromCharCode(buffer[address + i]);
+    i++;
+  }
+  return result;
 }
 
 export { analyze, returnHexOfBuffer, calcAddressOffset, hex2string};

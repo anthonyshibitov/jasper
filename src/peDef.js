@@ -2,6 +2,10 @@
 /* ------------------------------------- */
 /* ------------------------------------- */
 
+const createImageThunkData = function(){
+    
+}
+
 const createImageImportDescriptor = function() {
     return {
         OriginalFirstThunk: null, //DWORD
