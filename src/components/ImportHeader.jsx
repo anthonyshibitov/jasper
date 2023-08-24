@@ -5,10 +5,10 @@ function ImportHeader(props){
         const functionRVAList = descriptor.ImportRVAList;
         const functionList = functionNameList.map((func, index) => {
             return (
-                <>
+                <div key={index}>
                     <div>Function hint: {func.hint} Function name: {func.name}</div>
                     <div>IAT address: {functionRVAList[index]}</div>
-                </>
+                </div>
             )
         });
         return (

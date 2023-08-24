@@ -1,0 +1,42 @@
+#dos-header-wrapper {
+    border: 2px solid rgb(184, 184, 184);
+    padding: 0.5rem;
+}
+
+.header {
+  font-size: 2rem;
+  padding-left: 0.5rem;
+}
+
+.header-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.three-column {
+  background-color: var(--dark-bg);
+  display: flex;
+  flex-direction: row;
+}
+
+.three-column-item {
+  padding: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border: 2px solid var(--light-bg);
+}
+
+.three-column-item:first-child{
+    flex-basis: 150px;
+}
+
+.three-column-item:nth-child(2){
+    flex-basis: 150px;
+}
+
+.three-column-item:nth-child(3) {
+    flex-grow: 1;
+  color: var(--accent);
+}

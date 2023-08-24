@@ -205,7 +205,7 @@ function retrieveDWORD(buffer, offset) {
 }
 
 function retrieveWORD(buffer, offset) {
-  return ((buffer[offset + 1]).toString(16) + (buffer[offset]).toString(16)).padStart(4, '0').toUpperCase();
+  return ((buffer[offset + 1]).toString(16).padStart(2, '0') + (buffer[offset]).toString(16).padStart(2, '0')).toUpperCase();
 }
 
 function retrieveBYTE(buffer, offset) {
