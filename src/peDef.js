@@ -94,6 +94,44 @@ const createOptionalHeader32 = function () {
   };
 };
 
+const createOptionalHeader64 = function (){
+  return {
+    //Standard fields
+    Magic: null, //WORD
+    MajorLinkerVersion: null, //BYTE
+    MinorLinkerVersion: null, //BYTE
+    SizeOfCode: null, //DWORD
+    SizeOfInitializedData: null, //DWORD
+    SizeOfUninitializedData: null, //DWORD
+    AddressOfEntryPoint: null, //DWORD
+    BaseOfCode: null, //DWORD
+    //BaseOfData: null, //DWORD NOT IN PE32+
+    //NT additional fields
+    ImageBase: null, //QWORD
+    SectionAlignment: null, //DWORD
+    FileAlignment: null, //DWORD
+    MajorOperatingSystemVersion: null, //WORD
+    MinorOperatingSystemVersion: null, //WORD
+    MajorImageVersion: null, //WORD
+    MinorImageVersion: null, //WORD
+    MajorSubsystemVersion: null, //WORD
+    MinorSubsystemVersion: null, //WORD
+    Win32VersionValue: null, //DWORD
+    SizeOfImage: null, //DWORD
+    SizeOfHeaders: null, //DWORD
+    CheckSum: null, //DWORD
+    Subsystem: null, //WORD
+    DllCharacteristics: null, //WORD
+    SizeOfStackReserve: null, //QWORD
+    SizeOfStackCommit: null, //QWORD
+    SizeOfHeapReserve: null, //QWORD
+    SizeOfHeapCommit: null, //QWORD
+    LoaderFlags: null, //DWORD
+    NumberOfRvaAndSizes: null, //WORD
+    DataDirectory: [], //IMAGE_DATA_DIRECTORY
+  }
+}
+
 const createFileHeader = function () {
   return {
     Machine: null, //WORD
@@ -106,13 +144,19 @@ const createFileHeader = function () {
   };
 };
 
-const createNtHeader = function (is64) {
-  if (!is64) {
+const createNtHeader = function (is64bit) {
+  if (!is64bit) {
     return {
       Signature: null, //DWORD
       _IMAGE_FILE_HEADER: createFileHeader(),
       _IMAGE_OPTIONAL_HEADER32: createOptionalHeader32(),
     };
+  } else {
+    return {
+      Signature: null, //DWORD
+      _IMAGE_FILE_HEADER: createFileHeader(),
+      _IMAGE_OPTIONAL_HEADER64: createOptionalHeader64(),
+    }
   }
 };
 
@@ -140,10 +184,10 @@ const createDosHeader = function () {
   };
 };
 
-const createPe = function () {
+const createPe = function (is64bit) {
   return {
     _IMAGE_DOS_HEADER: createDosHeader(),
-    _IMAGE_NT_HEADER: createNtHeader(false),
+    _IMAGE_NT_HEADER: createNtHeader(is64bit),
     _IMAGE_SECTION_HEADERS: [],
     _IMAGE_SECTIONS: [],
     JasperInfo: {},

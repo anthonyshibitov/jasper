@@ -5,6 +5,7 @@ function QuickInfo(props) {
   const [show, setShow] = useState(true);
   const [toggleText, setToggleText] = useState("Hide");
 
+  console.log("quickinfo props", props);
   const info = props.quickInfo;
   const descriptors = info.importedDlls.ImportDirectoryTable;
   const dllNames = descriptors.map((descriptor, index) => {
@@ -16,7 +17,7 @@ function QuickInfo(props) {
         {descriptor.ImportNameList.map((importName, index) => {
           return (
             <div key={index}>
-              {descriptor.NameString}: {importName.name}
+              {descriptor.NameString}: {importName.name ? importName.name : <span className="ordinal">Ordinal: {importName.ordinal}</span>}
             </div>
           );
         })}
@@ -36,7 +37,7 @@ function QuickInfo(props) {
 
   return (
     <div id="quick-info-wrapper">
-      <div className="header-wrapper">
+      <div className="header-wrapper" onClick={() => toggle()}>
         <div className="header">Quick Information</div>
         <div className="toggle" onClick={() => toggle()}>
           {toggleText}
@@ -52,7 +53,7 @@ function QuickInfo(props) {
             </div>
             <div className="two-column">
               <div className="two-column-item">File size</div>
-              <div className="two-column-item">{info.size}</div>
+              <div className="two-column-item">{getReadableFileSizeString(info.size)}</div>
             </div>
             <div className="two-column">
               <div className="two-column-item">Platform</div>
@@ -62,7 +63,7 @@ function QuickInfo(props) {
             </div>
             <div className="two-column">
               <div className="two-column-item">Number of sections</div>
-              <div className="two-column-item">{info.sectionCount}</div>
+              <div className="two-column-item">{parseInt(info.sectionCount)}</div>
             </div>
             <div className="two-column">
               <div className="two-column-item">Imported DLLs</div>
@@ -77,6 +78,18 @@ function QuickInfo(props) {
       )}
     </div>
   );
+}
+
+// https://stackoverflow.com/questions/57803/how-to-convert-decimal-to-hexadecimal-in-javascript
+function getReadableFileSizeString(fileSizeInBytes) {
+  var i = -1;
+  var byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
+  do {
+    fileSizeInBytes /= 1024;
+    i++;
+  } while (fileSizeInBytes > 1024);
+
+  return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
 }
 
 export default QuickInfo;

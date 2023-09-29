@@ -74,3 +74,9 @@ input[type="file"] {
   justify-content: center;
   gap: 4rem;
 }
+
+.mobile-warning {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--accent);
+}

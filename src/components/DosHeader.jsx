@@ -19,7 +19,7 @@ function DosHeader(props) {
 
   return (
     <div id="dos-header-wrapper">
-      <div className="header-wrapper">
+      <div className="header-wrapper" onClick={() => toggle()}>
         <div className="header">DOS Header</div>
         <div className="toggle" onClick={() => toggle()}>
           {toggleText}

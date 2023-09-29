@@ -1,7 +1,32 @@
 import { createPe, createImageDataDirectory, createSectionHeader, createImageImportDescriptor } from "./peDef";
 
-function analyze(dataBuffer) {
-  const pe = createPe();
+function determineArchitecture(dataBuffer){
+  const magic = hex2a(retrieveWORD(dataBuffer, 0x00))
+  if (magic != "MZ"){
+    return -1;
+  }
+  const ArchOffset = parseInt(retrieveDWORD(dataBuffer, 0x3C), 16) + 24;
+  const arch = parseInt(retrieveWORD(dataBuffer, ArchOffset), 16);
+  if(arch == 0x10B){
+    console.log("32bit exe");
+    return 32;
+  }
+  if(arch == 0x20B){
+    console.log("64bit exe");
+    return 64;
+  }
+  console.log("Unidentified arch");
+  return -1;
+}
+
+function analyze32(dataBuffer) {
+  const arch = determineArchitecture(dataBuffer);
+  let pe;
+  if (arch == 32){
+    pe = createPe(false);
+  } else if (arch == 64){
+    pe = createPe(true);
+  }
 
   pe._IMAGE_DOS_HEADER.e_magic = retrieveWORD(dataBuffer, 0x00);
   pe._IMAGE_DOS_HEADER.e_cblp = retrieveWORD(dataBuffer, 0x02);
@@ -34,39 +59,80 @@ function analyze(dataBuffer) {
   pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.SizeOfOptionalHeader = retrieveWORD(dataBuffer, NTHeaderOffset + 20);
   pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.Characteristics = retrieveWORD(dataBuffer, NTHeaderOffset + 22);
 
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic = retrieveWORD(dataBuffer, NTHeaderOffset + 24);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorLinkerVersion = retrieveBYTE(dataBuffer, NTHeaderOffset + 26);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorLinkerVersion = retrieveBYTE(dataBuffer, NTHeaderOffset + 27);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfCode = retrieveDWORD(dataBuffer, NTHeaderOffset + 28);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfInitializedData = retrieveDWORD(dataBuffer, NTHeaderOffset + 32);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfUninitializedData = retrieveDWORD(dataBuffer, NTHeaderOffset + 36);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.AddressOfEntryPoint = retrieveDWORD(dataBuffer, NTHeaderOffset + 40);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.BaseOfCode = retrieveDWORD(dataBuffer, NTHeaderOffset + 44);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.BaseOfData = retrieveDWORD(dataBuffer, NTHeaderOffset + 48);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.ImageBase = retrieveDWORD(dataBuffer, NTHeaderOffset + 52);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SectionAlignment = retrieveDWORD(dataBuffer, NTHeaderOffset + 56);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.FileAlignment = retrieveDWORD(dataBuffer, NTHeaderOffset + 60);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorOperatingSystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 64);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorOperatingSystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 66);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorImageVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 68);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorImageVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 70);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorSubsystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 72);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorSubsystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 74);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Win32VersionValue = retrieveDWORD(dataBuffer, NTHeaderOffset + 76);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfImage = retrieveDWORD(dataBuffer, NTHeaderOffset + 80);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeaders = retrieveDWORD(dataBuffer, NTHeaderOffset + 84);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.CheckSum = retrieveDWORD(dataBuffer, NTHeaderOffset + 88);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Subsystem = retrieveWORD(dataBuffer, NTHeaderOffset + 92);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DllCharacteristics = retrieveWORD(dataBuffer, NTHeaderOffset + 94);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfStackReserve = retrieveDWORD(dataBuffer, NTHeaderOffset + 96);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfStackCommit = retrieveDWORD(dataBuffer, NTHeaderOffset + 100);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeapReserve = retrieveDWORD(dataBuffer, NTHeaderOffset + 104);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeapCommit = retrieveDWORD(dataBuffer, NTHeaderOffset + 108);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.LoaderFlags = retrieveDWORD(dataBuffer, NTHeaderOffset + 112);
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.NumberOfRvaAndSizes = retrieveWORD(dataBuffer, NTHeaderOffset + 116);
+  if (arch == 32){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic = retrieveWORD(dataBuffer, NTHeaderOffset + 24);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorLinkerVersion = retrieveBYTE(dataBuffer, NTHeaderOffset + 26);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorLinkerVersion = retrieveBYTE(dataBuffer, NTHeaderOffset + 27);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfCode = retrieveDWORD(dataBuffer, NTHeaderOffset + 28);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfInitializedData = retrieveDWORD(dataBuffer, NTHeaderOffset + 32);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfUninitializedData = retrieveDWORD(dataBuffer, NTHeaderOffset + 36);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.AddressOfEntryPoint = retrieveDWORD(dataBuffer, NTHeaderOffset + 40);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.BaseOfCode = retrieveDWORD(dataBuffer, NTHeaderOffset + 44);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.BaseOfData = retrieveDWORD(dataBuffer, NTHeaderOffset + 48);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.ImageBase = retrieveDWORD(dataBuffer, NTHeaderOffset + 52);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SectionAlignment = retrieveDWORD(dataBuffer, NTHeaderOffset + 56);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.FileAlignment = retrieveDWORD(dataBuffer, NTHeaderOffset + 60);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorOperatingSystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 64);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorOperatingSystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 66);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorImageVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 68);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorImageVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 70);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MajorSubsystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 72);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.MinorSubsystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 74);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Win32VersionValue = retrieveDWORD(dataBuffer, NTHeaderOffset + 76);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfImage = retrieveDWORD(dataBuffer, NTHeaderOffset + 80);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeaders = retrieveDWORD(dataBuffer, NTHeaderOffset + 84);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.CheckSum = retrieveDWORD(dataBuffer, NTHeaderOffset + 88);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Subsystem = retrieveWORD(dataBuffer, NTHeaderOffset + 92);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DllCharacteristics = retrieveWORD(dataBuffer, NTHeaderOffset + 94);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfStackReserve = retrieveDWORD(dataBuffer, NTHeaderOffset + 96);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfStackCommit = retrieveDWORD(dataBuffer, NTHeaderOffset + 100);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeapReserve = retrieveDWORD(dataBuffer, NTHeaderOffset + 104);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.SizeOfHeapCommit = retrieveDWORD(dataBuffer, NTHeaderOffset + 108);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.LoaderFlags = retrieveDWORD(dataBuffer, NTHeaderOffset + 112);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.NumberOfRvaAndSizes = retrieveDWORD(dataBuffer, NTHeaderOffset + 116);
+  }
+  if (arch == 64){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Magic = retrieveWORD(dataBuffer, NTHeaderOffset + 24);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MajorLinkerVersion = retrieveBYTE(dataBuffer, NTHeaderOffset + 26);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MinorLinkerVersion = retrieveBYTE(dataBuffer, NTHeaderOffset + 27);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfCode = retrieveDWORD(dataBuffer, NTHeaderOffset + 28);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfInitializedData = retrieveDWORD(dataBuffer, NTHeaderOffset + 32);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfUninitializedData = retrieveDWORD(dataBuffer, NTHeaderOffset + 36);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.AddressOfEntryPoint = retrieveDWORD(dataBuffer, NTHeaderOffset + 40);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.BaseOfCode = retrieveDWORD(dataBuffer, NTHeaderOffset + 44);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.ImageBase = retrieveQWORD(dataBuffer, NTHeaderOffset + 48);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SectionAlignment = retrieveDWORD(dataBuffer, NTHeaderOffset + 56);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.FileAlignment = retrieveDWORD(dataBuffer, NTHeaderOffset + 60);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MajorOperatingSystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 64);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MinorOperatingSystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 66);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MajorImageVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 68);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MinorImageVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 70);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MajorSubsystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 72);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.MinorSubsystemVersion = retrieveWORD(dataBuffer, NTHeaderOffset + 74);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Win32VersionValue = retrieveDWORD(dataBuffer, NTHeaderOffset + 76);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfImage = retrieveDWORD(dataBuffer, NTHeaderOffset + 80);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfHeaders = retrieveDWORD(dataBuffer, NTHeaderOffset + 84);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.CheckSum = retrieveDWORD(dataBuffer, NTHeaderOffset + 88);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Subsystem = retrieveWORD(dataBuffer, NTHeaderOffset + 92);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DllCharacteristics = retrieveWORD(dataBuffer, NTHeaderOffset + 94);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfStackReserve = retrieveQWORD(dataBuffer, NTHeaderOffset + 96);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfStackCommit = retrieveQWORD(dataBuffer, NTHeaderOffset + 104);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfHeapReserve = retrieveQWORD(dataBuffer, NTHeaderOffset + 112);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.SizeOfHeapCommit = retrieveQWORD(dataBuffer, NTHeaderOffset + 120);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.LoaderFlags = retrieveDWORD(dataBuffer, NTHeaderOffset + 128);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.NumberOfRvaAndSizes = retrieveDWORD(dataBuffer, NTHeaderOffset + 132);
+  }
 
-  const dataDirectoryCount = parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.NumberOfRvaAndSizes, 16);
-  let dataDirectoryOffset = NTHeaderOffset + 120;
+  let dataDirectoryCount;
+  let dataDirectoryOffset;
+  if (arch == 32){
+    dataDirectoryCount = parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.NumberOfRvaAndSizes, 16);
+    dataDirectoryOffset = NTHeaderOffset + 120;
+  }
+  if (arch == 64){
+    dataDirectoryCount = parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.NumberOfRvaAndSizes, 16);
+    dataDirectoryOffset = NTHeaderOffset + 136;
+  }
 
   for(let i = 0; i < dataDirectoryCount; i++){
     const newDataDirectory = createImageDataDirectory();
@@ -76,7 +142,12 @@ function analyze(dataBuffer) {
     newDataDirectory.Size = retrieveDWORD(dataBuffer, dataDirectoryOffset);
     dataDirectoryOffset += 4;
 
-    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory.push(newDataDirectory);
+    if (arch == 32){
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory.push(newDataDirectory);
+    }
+    if (arch == 64){
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory.push(newDataDirectory);
+    }
   }
 
   let sectionHeaderOffset = dataDirectoryOffset;
@@ -102,7 +173,13 @@ function analyze(dataBuffer) {
   }
 
   //Populate Import Directory information
-  const firstImportDirectoryEntryRVA = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].VirtualAddress;
+  let firstImportDirectoryEntryRVA;
+  if (arch == 32){
+    firstImportDirectoryEntryRVA = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].VirtualAddress;
+  }
+  if (arch == 64){
+    firstImportDirectoryEntryRVA = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].VirtualAddress;
+  }
 
   //Loop through sections to find which section the first IDT entry is
   let importSection;
@@ -117,10 +194,21 @@ function analyze(dataBuffer) {
   console.log("First import directory table entry file offset:", firstImportDirectoryEntryFileOffset);
 
   //Get number of import descriptors. Size of import drectory table / 20 (structure size) - 1 (last one is null)
-  const numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].Size, 16) / 20) - 1;
+  let numberOfImportDescriptors;
+  if (arch == 32){
+    numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].Size, 16) / 20) - 1;
+  }
+  if (arch == 64){
+    numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].Size, 16) / 20) - 1;
+  }
   console.log("number of import descriptors:", numberOfImportDescriptors);
 
-  pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable = [];
+  if (arch == 32){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable = [];
+  }
+  if (arch == 64){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].ImportDirectoryTable = [];
+  }
 
   let descriptorOffset = parseInt(firstImportDirectoryEntryFileOffset, 16);
 
@@ -131,8 +219,12 @@ function analyze(dataBuffer) {
     imageImportDescriptor.ForwarderChain = retrieveDWORD(dataBuffer, descriptorOffset + 8);
     imageImportDescriptor.Name = retrieveDWORD(dataBuffer, descriptorOffset + 12);
     imageImportDescriptor.FirstThunk = retrieveDWORD(dataBuffer, descriptorOffset + 16);
-    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable.push(imageImportDescriptor);
-
+    if (arch == 32){
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable.push(imageImportDescriptor);
+    }
+    if (arch == 64){
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].ImportDirectoryTable.push(imageImportDescriptor);
+    }
     const DllNameOffset = convertRVAToFileOffset(imageImportDescriptor.Name, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
     const DllName = getNullTerminatedString(dataBuffer, parseInt(DllNameOffset, 16));
     imageImportDescriptor.NameString = DllName;
@@ -145,21 +237,56 @@ function analyze(dataBuffer) {
     
     let originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.OriginalFirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
     while(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)) != '00000000'){
-      functionNameImportRVAs.push(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
-      originalThunkFileOffset = (parseInt(originalThunkFileOffset, 16) + 4).toString(16);
+      if (arch == 32){
+        functionNameImportRVAs.push(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
+        originalThunkFileOffset = (parseInt(originalThunkFileOffset, 16) + 4).toString(16);
+      }
+      if (arch == 64){
+        functionNameImportRVAs.push(retrieveQWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
+        originalThunkFileOffset = (parseInt(originalThunkFileOffset, 16) + 8).toString(16);
+      }
     }
 
     let thunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.FirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
-    while(retrieveDWORD(dataBuffer, parseInt(thunkFileOffset, 16)) != '00000000'){
-      functionAddressImportRVAs.push(thunkFileOffset.toUpperCase());
-      thunkFileOffset = (parseInt(thunkFileOffset, 16) + 4).toString(16);
+    if (arch == 32){
+      while(retrieveDWORD(dataBuffer, parseInt(thunkFileOffset, 16)) != '00000000'){
+        functionAddressImportRVAs.push(thunkFileOffset.toUpperCase());
+        thunkFileOffset = (parseInt(thunkFileOffset, 16) + 4).toString(16);
+      }
+    }
+    if (arch == 64){
+      while(retrieveQWORD(dataBuffer, parseInt(thunkFileOffset, 16)) != '0000000000000000'){
+        functionAddressImportRVAs.push(thunkFileOffset.toUpperCase());
+        thunkFileOffset = (parseInt(thunkFileOffset, 16) + 8).toString(16);
+      }
     }
 
     functionNameImportRVAs.forEach((rva) => {
-      const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
-      const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
-      const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
-      imageImportDescriptor.ImportNameList.push({hint, name});
+      if (arch == 32) {
+        if (parseInt(rva, 16) & 0x80000000 != 0){
+          console.log("ordinal import..");
+          imageImportDescriptor.ImportNameList.push({ordinal: rva & 0xFFFF}); //only want the lower 16 bits in 32bit file
+        } else {
+          const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+          const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
+          const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
+          imageImportDescriptor.ImportNameList.push({hint, name});
+        }
+      }
+      if (arch == 64) {
+        if ((BigInt(parseInt(rva, 16)) & BigInt("0x8000000000000000")) != 0){
+          console.log("ordinal import..");
+          console.log(rva);
+          console.log(BigInt("0x" + rva));
+          const ordinal = BigInt("0x" + rva) & 0xFFFFn;
+          imageImportDescriptor.ImportNameList.push({ordinal: parseInt(ordinal).toString(16)}); //only want the lower 16 bits in 32bit file
+        } else {
+          const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+          const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
+          const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
+          imageImportDescriptor.ImportNameList.push({hint, name});
+        }
+      }
     })
 
     functionAddressImportRVAs.forEach((rva, index) => {
@@ -198,6 +325,11 @@ function retrieveStringXBytes(buffer, offset, length, padding){
       returnBytes += buffer[offset + i].toString(16).padStart(2, '0'); //may not work.
   }
   return returnBytes.toUpperCase();
+}
+
+function retrieveQWORD(buffer, offset){
+  return ((buffer[offset + 7]).toString(16).padStart(2, '0') + (buffer[offset + 6]).toString(16).padStart(2, '0') + (buffer[offset + 5]).toString(16).padStart(2, '0') + (buffer[offset + 4]).toString(16).padStart(2, '0') + (buffer[offset + 3]).toString(16).padStart(2, '0') + (buffer[offset + 2]).toString(16).padStart(2, '0') + (buffer[offset + 1]).toString(16).padStart(2, '0') + (buffer[offset]).toString(16).padStart(2, '0')).toUpperCase();
+
 }
 
 function retrieveDWORD(buffer, offset) {
@@ -254,4 +386,15 @@ function getNullTerminatedString(buffer, address){
   return result;
 }
 
-export { analyze, returnHexOfBuffer, calcAddressOffset, hex2string};
+function hex2a(hex, trim) {
+  var str = "";
+  for (var i = 0; i < hex.length; i += 2) {
+    var v = parseInt(hex.substr(i, 2), 16);
+    if (v) {
+      str += String.fromCharCode(v);
+    }
+  }
+  return str.split("").reverse().join("");
+}
+
+export { analyze32, returnHexOfBuffer, calcAddressOffset, hex2string, determineArchitecture};

@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { analyze, returnHexOfBuffer } from "./peAnalyze";
+import { analyze32, returnHexOfBuffer, determineArchitecture } from "./peAnalyze";
 import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
-import NtHeader from "./components/NtHeader";
+import FileHeader from "./components/FileHeader";
 import "./App.css";
 import SectionHeaders from "./components/SectionHeaders";
 import ImportHeader from "./components/ImportHeader";
 import QuickInfo from "./components/QuickInfo";
+import OptHeader from "./components/OptHeader";
 
 function hex2a(hex, trim) {
   var str = "";
@@ -30,8 +31,10 @@ function App() {
   const [headerOffset, setHeaderOffset] = useState("");
   const [render, setRender] = useState(false);
   const [quickInfo, setQuickInfo] = useState({});
+  const [arch, setArch] = useState(0);
 
   useEffect(() => {
+    document.title = "JASPER";
     const uploadElement = document.getElementById("file-upload");
     uploadElement.addEventListener("change", () => {
       const file = uploadElement.files[0];
@@ -48,7 +51,21 @@ function App() {
 
       reader.onload = () => {
         const resultArray = new Uint8Array(reader.result);
-        const result = analyze(resultArray);
+        //for 32 bit
+
+        //const arch = determineArchitecture(resultArray);
+        setArch(determineArchitecture(resultArray));
+        const arch = determineArchitecture(resultArray);
+        let result;
+        if (arch == 32)
+          result = analyze32(resultArray);
+        if (arch == 64) {}
+          result = analyze32(resultArray);
+        if (arch == -1){
+          console.log("NOT A PE FILE");
+          return;
+        }
+
         // SUPER MEMORY INTENSIVE!!
         // setHex(returnHexOfBuffer(reader.result));
         if (hex2a(result._IMAGE_DOS_HEADER.e_magic) == "MZ") {
@@ -58,14 +75,26 @@ function App() {
             result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, "")
           );
           setSignatureAscii(hex2a(result._IMAGE_NT_HEADER.Signature));
-          setQuickInfo({
-            name: file.name,
-            size: file.size,
-            platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
-            sectionCount:
-              result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
-            importedDlls: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1],
-          });
+          if (arch == 32){
+            setQuickInfo({
+              name: file.name,
+              size: file.size,
+              platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
+              sectionCount:
+                result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+              importedDlls: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1],
+            });
+          }
+          if (arch == 64){
+            setQuickInfo({
+              name: file.name,
+              size: file.size,
+              platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Magic,
+              sectionCount:
+                result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+              importedDlls: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
+            });
+          }
           setRender(true);
         } else {
           alert("This is not a valid PE file.");
@@ -76,6 +105,7 @@ function App() {
 
   return (
     <div className="app-wrapper">
+      <div className="mobile-warning">This website is not designed for mobile!</div>
       <div className="title-wrapper">
         <div className="title">JASPER</div>
         <div className="title2">JavaScript PE Reverser/Explorer</div>
@@ -97,17 +127,32 @@ function App() {
         <div className="content-wrapper">
           <QuickInfo quickInfo={quickInfo} />
           <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii} />
-          <NtHeader
-            ntHeader={pe._IMAGE_NT_HEADER}
-            signatureAscii={signatureAscii}
+          <FileHeader
+            fileHeader={pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER}
             headerOffset={headerOffset}
+            signature = {pe._IMAGE_NT_HEADER.Signature}
           />
+          {arch == 32 && (
+          <OptHeader optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32} headerOffset={headerOffset}/>
+          )}
+          {arch == 64 && (
+          <OptHeader optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64} headerOffset={headerOffset}/>
+          )}
           <SectionHeaders sectionHeaders={pe._IMAGE_SECTION_HEADERS} />
+          {arch == 32 && (
           <ImportHeader
             importDescriptors={
               pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1]
             }
           />
+          )}
+          {arch == 64 && (
+          <ImportHeader
+            importDescriptors={
+              pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1]
+            }
+          />
+          )}
         </div>
       )}
     </div>
