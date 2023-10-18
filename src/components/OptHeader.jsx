@@ -33,7 +33,10 @@ function OptHeader(props) {
           dataDirectoryName = "IMAGE_DIRECTORY_ENTRY_DEBUG";
           break;
         case 7:
-          dataDirectoryName = "IMAGE_DIRECTORY_ENTRY_COPYRIGHT"; //x86 usage, IMAGE_DIRECTORY_ENTRY_ARCHITECTURE otherwise
+          if(arch == 32)
+            dataDirectoryName = "IMAGE_DIRECTORY_ENTRY_COPYRIGHT"; //x86 usage, IMAGE_DIRECTORY_ENTRY_ARCHITECTURE otherwise
+          if(arch == 64)
+            dataDirectoryName = "IMAGE_DIRECTORY_ENTRTY_ARCHITECTURE";
           break;
         case 8:
           dataDirectoryName = "IMAGE_DIRECTORY_ENTRY_GLOBALPTR";
@@ -57,15 +60,16 @@ function OptHeader(props) {
           dataDirectoryName = "IMAGE_DIRECTORY_ENTRY_COM_DESCRIPTOR";
           break;
         case 15:
-          dataDirectoryName = "Reserved, must be zero";
+          dataDirectoryName = "RESERVED";
           break;
         default:
           break;
       }
       return (
-        <div key={index}>
-          Directory {index}: {dataDirectoryName}, VirtualAddress:{" "}
-          {directory.VirtualAddress}, Size: {directory.Size}
+        <div className="three-column" key={index}>
+          <div className="three-column-item">{index}:{dataDirectoryName}</div>
+          <div className="three-column-item">{directory.VirtualAddress}</div>
+          <div className="three-column-item">{directory.Size}</div>
         </div>
       );
     }

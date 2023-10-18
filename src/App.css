@@ -10,7 +10,7 @@
   margin: 3rem;
   padding: 1rem;
   border-radius: 10px;
-  max-width: 1600px;
+  /* max-width: 1600px; */
 }
 
 input[type="file"] {
