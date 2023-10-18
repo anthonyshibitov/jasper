@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { analyze32, returnHexOfBuffer, determineArchitecture } from "./peAnalyze";
+import {
+  analyze32,
+  returnHexOfBuffer,
+  determineArchitecture,
+} from "./peAnalyze";
 import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
 import FileHeader from "./components/FileHeader";
@@ -32,6 +36,7 @@ function App() {
   const [render, setRender] = useState(false);
   const [quickInfo, setQuickInfo] = useState({});
   const [arch, setArch] = useState(0);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     document.title = "JASPER";
@@ -51,61 +56,57 @@ function App() {
 
       reader.onload = () => {
         const resultArray = new Uint8Array(reader.result);
-        //for 32 bit
 
-        //const arch = determineArchitecture(resultArray);
         setArch(determineArchitecture(resultArray));
-        const arch = determineArchitecture(resultArray);
+        const archLocal = determineArchitecture(resultArray);
         let result;
-        if (arch == 32)
-          result = analyze32(resultArray);
-        if (arch == 64) {}
-          result = analyze32(resultArray);
-        if (arch == -1){
-          console.log("NOT A PE FILE");
+        if (archLocal == 32 || archLocal == 64) result = analyze32(resultArray);
+
+        if (archLocal == -1) {
+          setError("Selected file is not a valid PE file. The DOS / Optional Header magic values may have been corrupted or changed.");
+          setRender(true);
           return;
         }
 
         // SUPER MEMORY INTENSIVE!!
         // setHex(returnHexOfBuffer(reader.result));
-        if (hex2a(result._IMAGE_DOS_HEADER.e_magic) == "MZ") {
-          setMagicAscii(hex2a(result._IMAGE_DOS_HEADER.e_magic));
-          setPe(result);
-          setHeaderOffset(
-            result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, "")
-          );
-          setSignatureAscii(hex2a(result._IMAGE_NT_HEADER.Signature));
-          if (arch == 32){
-            setQuickInfo({
-              name: file.name,
-              size: file.size,
-              platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
-              sectionCount:
-                result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
-              importedDlls: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1],
-            });
-          }
-          if (arch == 64){
-            setQuickInfo({
-              name: file.name,
-              size: file.size,
-              platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Magic,
-              sectionCount:
-                result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
-              importedDlls: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
-            });
-          }
-          setRender(true);
-        } else {
-          alert("This is not a valid PE file.");
+
+        setMagicAscii(hex2a(result._IMAGE_DOS_HEADER.e_magic));
+        setPe(result);
+        setHeaderOffset(result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, ""));
+        setSignatureAscii(hex2a(result._IMAGE_NT_HEADER.Signature));
+        if (archLocal == 32) {
+          setQuickInfo({
+            name: file.name,
+            size: file.size,
+            platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
+            sectionCount:
+              result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+            importedDlls:
+              result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1],
+          });
         }
+        if (archLocal == 64) {
+          setQuickInfo({
+            name: file.name,
+            size: file.size,
+            platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Magic,
+            sectionCount:
+              result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+            importedDlls:
+              result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
+          });
+        }
+        setRender(true);
       };
     });
   }, []);
 
   return (
     <div className="app-wrapper">
-      <div className="mobile-warning">This website is not designed for mobile!</div>
+      <div className="mobile-warning">
+        This website is not designed for mobile!
+      </div>
       <div className="title-wrapper">
         <div className="title">JASPER</div>
         <div className="title2">JavaScript PE Reverser/Explorer</div>
@@ -123,38 +124,50 @@ function App() {
           </div>
         </>
       )}
-      {render == true && (
+      {render == true && error == "" && (
         <div className="content-wrapper">
           <QuickInfo quickInfo={quickInfo} />
           <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii} />
           <FileHeader
             fileHeader={pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER}
             headerOffset={headerOffset}
-            signature = {pe._IMAGE_NT_HEADER.Signature}
+            signature={pe._IMAGE_NT_HEADER.Signature}
           />
           {arch == 32 && (
-          <OptHeader optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32} headerOffset={headerOffset}/>
+            <OptHeader
+              optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32}
+              headerOffset={headerOffset}
+              arch={arch}
+            />
           )}
           {arch == 64 && (
-          <OptHeader optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64} headerOffset={headerOffset}/>
+            <OptHeader
+              optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64}
+              headerOffset={headerOffset}
+              arch={arch}
+            />
           )}
           <SectionHeaders sectionHeaders={pe._IMAGE_SECTION_HEADERS} />
           {arch == 32 && (
-          <ImportHeader
-            importDescriptors={
-              pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1]
-            }
-          />
+            <ImportHeader
+              importDescriptors={
+                pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1]
+              }
+            />
           )}
           {arch == 64 && (
-          <ImportHeader
-            importDescriptors={
-              pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1]
-            }
-          />
+            <ImportHeader
+              importDescriptors={
+                pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1]
+              }
+            />
           )}
         </div>
       )}
+      {render == true && error != "" && (
+          <div>{error}</div>
+        )
+      }
     </div>
   );
 }

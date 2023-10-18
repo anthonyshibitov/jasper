@@ -62,21 +62,20 @@ function FileHeader(props) {
               <div className="three-column-item">PointerToSymbolTable</div>
               <div className="three-column-item">{fileHeader.PointerToSymbolTable}</div>
             </div>
-            <div>
-               {" "}
-              
+            <div className="three-column">
+              <div className="three-column-item">0x{calcAddressOffset(headerOffset, 16)}</div>
+              <div className="three-column-item">NumberOfSymbols</div>
+              <div className="three-column-item">{fileHeader.NumberOfSymbols}</div>
             </div>
-            <div>
-              0x{calcAddressOffset(headerOffset, 16)} NumberOfSymbols{" "}
-              {fileHeader.NumberOfSymbols}
+            <div className="three-column">
+              <div className="three-column-item">0x{calcAddressOffset(headerOffset, 20)}</div>
+              <div className="three-column-item">SizeOfOptionalHeader</div>
+              <div className="three-column-item">{fileHeader.SizeOfOptionalHeader}</div>
             </div>
-            <div>
-              0x{calcAddressOffset(headerOffset, 20)} SizeOfOptionalHeader{" "}
-              {fileHeader.SizeOfOptionalHeader}
-            </div>
-            <div>
-              0x{calcAddressOffset(headerOffset, 22)} Characteristics{" "}
-              {fileHeader.Characteristics}
+            <div className="three-column">
+              <div className="three-column-item">0x{calcAddressOffset(headerOffset, 22)}</div>
+              <div className="three-column-item">Characteristics</div>
+              <div className="three-column-item">{fileHeader.Characteristics}</div>
             </div>
           </div>
         </div>

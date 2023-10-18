@@ -8,14 +8,11 @@ function determineArchitecture(dataBuffer){
   const ArchOffset = parseInt(retrieveDWORD(dataBuffer, 0x3C), 16) + 24;
   const arch = parseInt(retrieveWORD(dataBuffer, ArchOffset), 16);
   if(arch == 0x10B){
-    console.log("32bit exe");
     return 32;
   }
   if(arch == 0x20B){
-    console.log("64bit exe");
     return 64;
   }
-  console.log("Unidentified arch");
   return -1;
 }
 
