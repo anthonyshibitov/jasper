@@ -181,7 +181,9 @@ function analyze32(dataBuffer) {
   //Loop through sections to find which section the first IDT entry is
   let importSection;
   for(let i = 0; i < pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections; i++){
-    if(parseInt(firstImportDirectoryEntryRVA, 16) > parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) && parseInt(firstImportDirectoryEntryRVA, 16) < parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) + parseInt(pe._IMAGE_SECTION_HEADERS[i].PhyAdd_VirSize, 16)){
+    let currentSectionVirtualAddressStart = parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16);
+    let currentSectionVirtualAddressEnd = parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) + parseInt(pe._IMAGE_SECTION_HEADERS[i].PhyAdd_VirSize, 16)
+    if(parseInt(firstImportDirectoryEntryRVA, 16) >= currentSectionVirtualAddressStart && parseInt(firstImportDirectoryEntryRVA, 16) < currentSectionVirtualAddressEnd){
       importSection = i;
     }
   }
@@ -191,12 +193,17 @@ function analyze32(dataBuffer) {
   console.log("First import directory table entry file offset:", firstImportDirectoryEntryFileOffset);
 
   //Get number of import descriptors. Size of import drectory table / 20 (structure size) - 1 (last one is null)
-  let numberOfImportDescriptors;
-  if (arch == 32){
-    numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].Size, 16) / 20) - 1;
-  }
-  if (arch == 64){
-    numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].Size, 16) / 20) - 1;
+  let numberOfImportDescriptors = 0;
+  // if (arch == 32){
+  //   numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].Size, 16) / 20) - 1;
+  // }
+  // if (arch == 64){
+  //   numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].Size, 16) / 20) - 1;
+  // }
+  let currentImportDescriptorOffset = parseInt(firstImportDirectoryEntryFileOffset, 16);
+  while(parseInt(retrieveStringXBytes(dataBuffer, currentImportDescriptorOffset, 20), 16) != 0){
+    numberOfImportDescriptors++;
+    currentImportDescriptorOffset += 20;
   }
   console.log("number of import descriptors:", numberOfImportDescriptors);
 
@@ -231,7 +238,8 @@ function analyze32(dataBuffer) {
     const functionNameImportRVAs = [];
     //Get list of RVAs for import address table
     const functionAddressImportRVAs = [];
-    
+
+    //OFT is 0 in example file?
     let originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.OriginalFirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
     while(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)) != '00000000'){
       if (arch == 32){
