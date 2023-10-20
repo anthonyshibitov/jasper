@@ -194,12 +194,6 @@ function analyze32(dataBuffer) {
 
   //Get number of import descriptors. Size of import drectory table / 20 (structure size) - 1 (last one is null)
   let numberOfImportDescriptors = 0;
-  // if (arch == 32){
-  //   numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].Size, 16) / 20) - 1;
-  // }
-  // if (arch == 64){
-  //   numberOfImportDescriptors = (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].Size, 16) / 20) - 1;
-  // }
   let currentImportDescriptorOffset = parseInt(firstImportDirectoryEntryFileOffset, 16);
   while(parseInt(retrieveStringXBytes(dataBuffer, currentImportDescriptorOffset, 20), 16) != 0){
     numberOfImportDescriptors++;
@@ -236,11 +230,15 @@ function analyze32(dataBuffer) {
 
     //Get list of RVAs for name imports
     const functionNameImportRVAs = [];
-    //Get list of RVAs for import address table
-    const functionAddressImportRVAs = [];
 
     //OFT is 0 in example file?
-    let originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.OriginalFirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+    let originalThunkFileOffset;
+    if (parseInt(imageImportDescriptor.OriginalFirstThunk, 16) == 0){
+      originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.FirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+    } else {
+      originalThunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.OriginalFirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
+    }
+
     while(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)) != '00000000'){
       if (arch == 32){
         functionNameImportRVAs.push(retrieveDWORD(dataBuffer, parseInt(originalThunkFileOffset, 16)));
@@ -252,34 +250,24 @@ function analyze32(dataBuffer) {
       }
     }
 
-    let thunkFileOffset = convertRVAToFileOffset(imageImportDescriptor.FirstThunk, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
-    if (arch == 32){
-      while(retrieveDWORD(dataBuffer, parseInt(thunkFileOffset, 16)) != '00000000'){
-        functionAddressImportRVAs.push(thunkFileOffset.toUpperCase());
-        thunkFileOffset = (parseInt(thunkFileOffset, 16) + 4).toString(16);
-      }
-    }
-    if (arch == 64){
-      while(retrieveQWORD(dataBuffer, parseInt(thunkFileOffset, 16)) != '0000000000000000'){
-        functionAddressImportRVAs.push(thunkFileOffset.toUpperCase());
-        thunkFileOffset = (parseInt(thunkFileOffset, 16) + 8).toString(16);
-      }
-    }
-
     functionNameImportRVAs.forEach((rva) => {
       if (arch == 32) {
-        if (parseInt(rva, 16) & 0x80000000 != 0){
+        let bitCheck = parseInt(rva, 16) & 0x80000000;
+        if (bitCheck != 0){
           console.log("ordinal import..");
-          imageImportDescriptor.ImportNameList.push({ordinal: rva & 0xFFFF}); //only want the lower 16 bits in 32bit file
+          let ordinal = parseInt(rva, 16) & 0xFFFF;
+          ordinal = "0x" + ordinal.toString(16).toUpperCase();
+          imageImportDescriptor.ImportNameList.push({ordinal}); //only want the lower 16 bits in 32bit file
         } else {
           const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
           const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
           const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
-          imageImportDescriptor.ImportNameList.push({hint, name});
+          imageImportDescriptor.ImportNameList.push({hint, name, rva});
         }
       }
       if (arch == 64) {
-        if ((BigInt(parseInt(rva, 16)) & BigInt("0x8000000000000000")) != 0){
+        let bitCheck = (BigInt(parseInt(rva, 16)) & BigInt("0x8000000000000000"));
+        if (bitCheck != 0){
           console.log("ordinal import..");
           console.log(rva);
           console.log(BigInt("0x" + rva));
@@ -289,13 +277,9 @@ function analyze32(dataBuffer) {
           const offset = convertRVAToFileOffset(rva, pe._IMAGE_SECTION_HEADERS[importSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[importSection].PointerToRawData);
           const hint = retrieveWORD(dataBuffer, parseInt(offset, 16));
           const name = getNullTerminatedString(dataBuffer, parseInt(offset, 16) + 2); 
-          imageImportDescriptor.ImportNameList.push({hint, name});
+          imageImportDescriptor.ImportNameList.push({hint, name, rva});
         }
       }
-    })
-
-    functionAddressImportRVAs.forEach((rva, index) => {
-      imageImportDescriptor.ImportRVAList.push(rva);
     })
 
     descriptorOffset += 20;
