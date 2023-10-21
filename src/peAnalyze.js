@@ -151,7 +151,7 @@ function analyze32(dataBuffer) {
 
   const numberOfSections = pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections;
 
-  for(let i = 0; i < numberOfSections; i++){
+  for(let i = 0; i < parseInt(numberOfSections, 16); i++){
     const newSectionHeader = new createSectionHeader();
     newSectionHeader.Name = retrieveStringXBytes(dataBuffer, sectionHeaderOffset, 8, 8);
     newSectionHeader.PhyAdd_VirSize = retrieveDWORD(dataBuffer, sectionHeaderOffset + 8);
@@ -180,7 +180,7 @@ function analyze32(dataBuffer) {
 
   //Loop through sections to find which section the first IDT entry is
   let importSection;
-  for(let i = 0; i < pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections; i++){
+  for(let i = 0; i < parseInt(pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections, 16); i++){
     let currentSectionVirtualAddressStart = parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16);
     let currentSectionVirtualAddressEnd = parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) + parseInt(pe._IMAGE_SECTION_HEADERS[i].PhyAdd_VirSize, 16)
     if(parseInt(firstImportDirectoryEntryRVA, 16) >= currentSectionVirtualAddressStart && parseInt(firstImportDirectoryEntryRVA, 16) < currentSectionVirtualAddressEnd){
