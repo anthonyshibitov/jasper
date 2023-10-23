@@ -9,7 +9,18 @@ function QuickInfo(props) {
   const info = props.quickInfo;
   const descriptors = info.importedDlls.ImportDirectoryTable;
   const dllNames = descriptors.map((descriptor, index) => {
-    return <div key={index}>{descriptor.NameString}</div>;
+    let bound = false;
+    console.log(descriptor.TimeDateStamp);
+    if(descriptor.TimeDateStamp == 'FFFFFFFF'){ // -1 as an unsigned DWORD
+      console.log("bound");
+      bound = true;
+    }
+    return <div key={index}>
+        {descriptor.NameString} {" "}
+        {bound && 
+            <span className="ordinal">BOUND</span>
+        }
+      </div>;
   });
   const functionNames = descriptors.map((descriptor, index) => {
     return (

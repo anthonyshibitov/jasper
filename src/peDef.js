@@ -10,10 +10,6 @@ const createImageBoundImportDescriptor = function(){
     }
 }
 
-const createImageThunkData = function(){
-
-}
-
 const createImageImportDescriptor = function() {
     return {
         OriginalFirstThunk: null, //DWORD
@@ -194,4 +190,4 @@ const createPe = function (is64bit) {
   };
 };
 
-export { createPe, createImageDataDirectory, createSectionHeader, createSectionTable, createImageImportDescriptor };
+export { createPe, createImageDataDirectory, createSectionHeader, createSectionTable, createImageImportDescriptor, createImageBoundImportDescriptor };
