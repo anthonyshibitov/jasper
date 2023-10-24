@@ -6,28 +6,11 @@ function FileHeader(props) {
   const headerOffset = props.headerOffset;
   const signature = props.signature;
 
-  const [show, setShow] = useState(false);
-  const [toggleText, setToggleText] = useState("Show");
-
-  const toggle = function () {
-    if (show) {
-      setShow(false);
-      setToggleText("Show");
-    } else {
-      setShow(true);
-      setToggleText("Hide");
-    }
-  };
-
   return (
     <div id="nt-header-wrapper">
       <div className="header-wrapper">
         <div className="header">File Header</div>
-        <div className="toggle" onClick={() => toggle()}>
-          {toggleText}
-        </div>
       </div>
-      {show && (
         <div>
           <div className="table">
             <div className="three-column">
@@ -79,7 +62,6 @@ function FileHeader(props) {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }

@@ -1,0 +1,31 @@
+.navbar-wrapper {
+    position: sticky;
+    top: -1px;
+    display: flex;
+    justify-content: center;
+}
+
+#active {
+    background-color: var(--accent);
+}
+
+.navbar-item{
+    font-size: 1.75rem;
+    background-color: var(--dark-bg);
+    padding: 0.5rem;
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+}
+
+.navbar-item:hover{
+    background-color: var(--light-bg);
+}
+
+.navbar-item:first-child {
+    border-bottom-left-radius: 5px;
+    border-left: 1px solid white;
+}
+.navbar-item:last-child {
+    border-bottom-right-radius: 5px;
+    border-right: 1px solid white;
+}

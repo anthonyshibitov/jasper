@@ -357,6 +357,7 @@ function analyze32(dataBuffer) {
 
 function constructBoundImports(pe, dataBuffer, arch){
   //Table 11
+  const boundImports = [];
   let boundDescriptorTableOffset;
   if (arch == 32){
     boundDescriptorTableOffset = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[11].VirtualAddress;
@@ -373,8 +374,15 @@ function constructBoundImports(pe, dataBuffer, arch){
     boundDescriptor.OffsetModuleName = retrieveWORD(dataBuffer, boundDescriptorTableOffset + 4);
     boundDescriptor.NumberOfModuleForwarderRefs = retrieveWORD(dataBuffer, boundDescriptorTableOffset + 6);
     boundDescriptor.NameString = getNullTerminatedString(dataBuffer, originalBoundDescriptorTableOffset + parseInt(boundDescriptor.OffsetModuleName, 16));
+    boundImports.push(boundDescriptor);
     console.log("bound import", boundDescriptor);
     boundDescriptorTableOffset += 8;
+  }
+  if (arch == 32){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[11].BoundImportDirectoryTable = boundImports;
+  }
+  if (arch == 64){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11].BoundImportDirectoryTable = boundImports;
   }
 }
 

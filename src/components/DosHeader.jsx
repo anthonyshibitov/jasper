@@ -4,28 +4,11 @@ import "./DosHeader.css";
 function DosHeader(props) {
   const dosHeader = props.dosHeader;
 
-  const [show, setShow] = useState(false);
-  const [toggleText, setToggleText] = useState("Show");
-
-  const toggle = function () {
-    if (show) {
-      setShow(false);
-      setToggleText("Show");
-    } else {
-      setShow(true);
-      setToggleText("Hide");
-    }
-  };
-
   return (
     <div id="dos-header-wrapper">
       <div className="header-wrapper" onClick={() => toggle()}>
         <div className="header">DOS Header</div>
-        <div className="toggle" onClick={() => toggle()}>
-          {toggleText}
-        </div>
       </div>
-      {show && (
         <div>
           <div className="table">
             <div className="three-column">
@@ -134,7 +117,6 @@ function DosHeader(props) {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }

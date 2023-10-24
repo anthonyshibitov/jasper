@@ -12,6 +12,7 @@ import SectionHeaders from "./components/SectionHeaders";
 import ImportHeader from "./components/ImportHeader";
 import QuickInfo from "./components/QuickInfo";
 import OptHeader from "./components/OptHeader";
+import NavBar from "./components/NavBar";
 
 function hex2a(hex, trim) {
   var str = "";
@@ -37,6 +38,7 @@ function App() {
   const [quickInfo, setQuickInfo] = useState({});
   const [arch, setArch] = useState(0);
   const [error, setError] = useState("");
+  const [show, setShow] = useState("");
 
   useEffect(() => {
     document.title = "JASPER";
@@ -126,21 +128,22 @@ function App() {
       )}
       {render == true && error == "" && (
         <div className="content-wrapper">
-          <QuickInfo quickInfo={quickInfo} />
-          <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii} />
-          <FileHeader
+          <NavBar setShow={setShow} show={show}/>
+          {show == "quick" && <QuickInfo quickInfo={quickInfo} />}
+          {show == "dos" && <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii} />}
+          {show == "file" && <FileHeader
             fileHeader={pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER}
             headerOffset={headerOffset}
             signature={pe._IMAGE_NT_HEADER.Signature}
-          />
-          {arch == 32 && (
+          />}
+          {show == "optional" && arch == 32 && (
             <OptHeader
               optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32}
               headerOffset={headerOffset}
               arch={arch}
             />
           )}
-          {arch == 64 && (
+          {show == "optional" && arch == 64 && (
             <OptHeader
               optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64}
               headerOffset={headerOffset}

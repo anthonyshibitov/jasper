@@ -48,7 +48,7 @@ const createImageDataDirectory = function () {
   return {
     VirtualAddress: null, //DWORD
     Size: null, //DWORD
-    ImportDirectoryTable: [],
+    // ImportDirectoryTable: [],
   };
 };
 

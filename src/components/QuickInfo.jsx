@@ -2,9 +2,6 @@ import { useState } from "react";
 import "./QuickInfo.css";
 
 function QuickInfo(props) {
-  const [show, setShow] = useState(true);
-  const [toggleText, setToggleText] = useState("Hide");
-
   console.log("quickinfo props", props);
   const info = props.quickInfo;
   const descriptors = info.importedDlls.ImportDirectoryTable;
@@ -36,25 +33,12 @@ function QuickInfo(props) {
     );
   });
 
-  const toggle = function () {
-    if (show) {
-      setShow(false);
-      setToggleText("Show");
-    } else {
-      setShow(true);
-      setToggleText("Hide");
-    }
-  };
-
   return (
     <div id="quick-info-wrapper">
       <div className="header-wrapper" onClick={() => toggle()}>
         <div className="header">Quick Information</div>
-        <div className="toggle" onClick={() => toggle()}>
-          {toggleText}
-        </div>
+
       </div>
-      {show && (
         <div>
           <div className="header-sub-text">A quick glance at important attributes.</div>
           <div className="table">
@@ -86,7 +70,6 @@ function QuickInfo(props) {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }
