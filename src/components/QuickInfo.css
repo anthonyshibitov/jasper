@@ -1,5 +1,6 @@
 #quick-info-wrapper {
     border: 2px solid rgb(184, 184, 184);
+    border-top: 0px;
     padding: 0.5rem;
 }
 

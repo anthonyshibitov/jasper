@@ -1,0 +1,28 @@
+td, th { 
+    padding: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: 2px solid var(--light-bg);
+}
+
+td:nth-child(3), th:nth-child(3){
+    width: 100%;
+    color: var(--accent);
+}
+
+table {
+    width: 100%;
+    background-color: var(--dark-bg);
+    border-spacing: 0px;
+    border: 1px solid var(--light-bg);
+}
+
+th {
+    text-align: left;
+}
+
+#optional-header-wrapper {
+    border: 2px solid rgb(184, 184, 184);
+    border-top: 0px;
+    padding: 0.5rem;
+}
