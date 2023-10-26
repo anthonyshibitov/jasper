@@ -66,16 +66,19 @@ function OptHeader(props) {
           break;
       }
       return (
-        <div className="three-column" key={index}>
-          <div className="three-column-item">
+        <tr key={index}>
+          <td>
             {index}:{dataDirectoryName}
-          </div>
-          <div className="three-column-item">{directory.VirtualAddress}</div>
-          <div className="three-column-item">{directory.Size}</div>
-        </div>
+          </td>
+          <td>{directory.VirtualAddress}</td>
+          <td>{directory.Size}</td>
+        </tr>
       );
     }
   );
+
+  console.log("DLL CHARS", parseInt(optionalHeader.DllCharacteristics, 16));
+  console.log("DLL HEX", optionalHeader.DllCharacteristics);
 
   return (
     <div id="optional-header-wrapper">
@@ -213,7 +216,57 @@ function OptHeader(props) {
           <tr>
             <td>0x{calcAddressOffset(headerOffset, 94)}</td>
             <td>DllCharacteristics</td>
-            <td>{optionalHeader.DllCharacteristics}</td>
+            <td>
+              {optionalHeader.DllCharacteristics}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x8000) ==
+                0x8000 && (
+                <div>
+                  TerminalServerAware: The image is Terminal Server aware.
+                </div>
+              )}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x2000) ==
+                0x2000 && <div>WdmDriver: The driver uses the WDM model.</div>}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x1000) ==
+                0x1000 && (
+                <div>
+                  AppContainer: The image must run inside an AppContainer.
+                </div>
+              )}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x800) ==
+                0x800 && <div>NoBind: Do not bind this image.</div>}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x400) ==
+                0x400 && (
+                <div>
+                  NoSeh: The image does not use SEH. No SE handler may reside in
+                  this image.
+                </div>
+              )}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x400) ==
+                0x400 && (
+                <div>
+                  NoSeh: The image does not use SEH. No SE handler may reside in
+                  this image.
+                </div>
+              )}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x200) ==
+                0x200 && (
+                <div>
+                  NoIsolation: The image understands isolation and doesn't want
+                  it.
+                </div>
+              )}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x100) ==
+                0x100 && <div>NxCompatible: The image is NX compatible.</div>}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x40) ==
+                0x40 && <div>DynamicBase: The DLL can be relocated.</div>}
+              {(parseInt(optionalHeader.DllCharacteristics, 16) & 0x20) ==
+                0x20 && (
+                <div>
+                  HighEntropyVirtualAddressSpace: The image can handle a high
+                  entropy 64-bit virtual address space.
+                </div>
+              )}
+            </td>
           </tr>
           <tr>
             <td>0x{calcAddressOffset(headerOffset, 96)}</td>
@@ -247,7 +300,19 @@ function OptHeader(props) {
           </tr>
         </tbody>
       </table>
-      {DataDirectories}
+      <div className="header-wrapper">
+        <div className="header">Data Directories</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>DIRECTORY NAME</th>
+            <th>RVA</th>
+            <th>SIZE</th>
+          </tr>
+        </thead>
+        <tbody>{DataDirectories}</tbody>
+      </table>
     </div>
   );
 }

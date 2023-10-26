@@ -365,6 +365,7 @@ function constructBoundImports(pe, dataBuffer, arch){
   if (arch == 64){
     boundDescriptorTableOffset = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11].VirtualAddress;
   }
+  if(boundDescriptorTableOffset == 0) return;
   boundDescriptorTableOffset = parseInt(boundDescriptorTableOffset, 16);
   const originalBoundDescriptorTableOffset = boundDescriptorTableOffset;
   while(retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8) != "0000000000000000"){
