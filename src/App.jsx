@@ -99,6 +99,7 @@ function App() {
               result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
           });
         }
+        setShow("quick");
         setRender(true);
       };
     });
@@ -121,7 +122,7 @@ function App() {
               Upload PE File
             </label>
             <div className="button-under-label">
-              NOTE: JASPER only supports 32 bit at the moment.
+              made by sasha... :D
             </div>
           </div>
         </>
@@ -150,15 +151,17 @@ function App() {
               arch={arch}
             />
           )}
-          <SectionHeaders sectionHeaders={pe._IMAGE_SECTION_HEADERS} />
-          {arch == 32 && (
+          {show == "sections" &&
+            <SectionHeaders sectionHeaders={pe._IMAGE_SECTION_HEADERS} />
+          }
+          {show == "imports" && arch == 32 && (
             <ImportHeader
               importDescriptors={
                 pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1]
               }
             />
           )}
-          {arch == 64 && (
+          {show == "imports" && arch == 64 && (
             <ImportHeader
               importDescriptors={
                 pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1]

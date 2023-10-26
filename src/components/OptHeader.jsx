@@ -92,7 +92,7 @@ function OptHeader(props) {
             <th>VALUE</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="third-color">
           <tr>
             <td>0x{calcAddressOffset(headerOffset, 24)}</td>
             <td>Magic</td>
@@ -247,6 +247,7 @@ function OptHeader(props) {
           </tr>
         </tbody>
       </table>
+      {DataDirectories}
     </div>
   );
 }

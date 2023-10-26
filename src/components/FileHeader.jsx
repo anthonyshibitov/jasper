@@ -82,7 +82,7 @@ function FileHeader(props) {
               <th>VALUE</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="third-color">
             <tr>
               <td>0x{calcAddressOffset(headerOffset, 0)}</td>
               <td>Signature</td>

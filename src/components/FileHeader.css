@@ -5,7 +5,7 @@ td, th {
     border: 2px solid var(--light-bg);
 }
 
-td:nth-child(3), th:nth-child(3){
+.third-color td:nth-child(3), .third-color th:nth-child(3){
     width: 100%;
     color: var(--accent);
 }

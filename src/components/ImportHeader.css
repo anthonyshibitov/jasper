@@ -5,9 +5,8 @@ td, th {
     border: 2px solid var(--light-bg);
 }
 
-.third-color td:nth-child(3), .third-color th:nth-child(3){
+td:nth-child(3), th:nth-child(3){
     width: 100%;
-    color: var(--accent);
 }
 
 table {
@@ -21,8 +20,22 @@ th {
     text-align: left;
 }
 
-#optional-header-wrapper {
+.import-wrapper {
     border: 2px solid rgb(184, 184, 184);
     border-top: 0px;
     padding: 0.5rem;
+}
+
+.dll-name {
+    /* background-color: white; */
+    background-color: darkred;
+    color: white;
+}
+
+.bound {
+    color: yellow;
+}
+
+.ordinal {
+    color: orange;
 }
