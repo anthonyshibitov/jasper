@@ -14,6 +14,7 @@ table {
     background-color: var(--dark-bg);
     border-spacing: 0px;
     border: 1px solid var(--light-bg);
+    border-collapse: collapse;
 }
 
 th {

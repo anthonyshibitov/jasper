@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import "./ImportHeader.css";
 
 function ImportHeader(props) {
@@ -16,15 +17,17 @@ function ImportHeader(props) {
                 <td>{func.rva}</td>
               </>
             ) : (
-              <td colSpan="3" className="ordinal">ORDINAL {func.ordinal}</td>
+              <td colSpan="3" className="ordinal">
+                ORDINAL {func.ordinal}
+              </td>
             )}
           </tr>
         );
       });
       return (
-        <>
-          <tr key={index}>
-            <td colspan="3" className="dll-name">
+        <tbody key={index} className="sticky-container">
+          <tr>
+            <td colSpan="3" className="dll-name">
               DLL: {descriptor.NameString}{" "}
               {descriptor.TimeDateStamp == "FFFFFFFF" && (
                 <span className="bound">BOUND</span>
@@ -32,7 +35,7 @@ function ImportHeader(props) {
             </td>
           </tr>
           {functionList}
-        </>
+        </tbody>
       );
     }
   );
@@ -42,14 +45,14 @@ function ImportHeader(props) {
       <div>Import Descriptors</div>
       <div className="table-wrapper">
         <table>
-            <thead>
-                <tr>
-                    <th>HINT</th>
-                    <th>NAME</th>
-                    <th>Import Address Table RVA</th>
-                </tr>
-            </thead>
-            {descriptors}
+          <thead>
+            <tr>
+              <th>HINT</th>
+              <th>NAME</th>
+              <th>Import Address Table RVA</th>
+            </tr>
+          </thead>
+          {descriptors}
         </table>
       </div>
     </div>

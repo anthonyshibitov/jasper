@@ -6,12 +6,12 @@ function SectionHeaders(props) {
     console.log(parseInt(header.Characteristics, 16));
     console.log(header.Characteristics);
     return (
-      <>
+      <div key={index}>
         {/* <div>Section name: {hex2string(header.Name)}</div> */}
-        <table key={index}>
+        <table>
           <thead>
             <tr>
-              <th colspan="3">
+              <th colSpan="3">
                 Section name: <b>{hex2string(header.Name)}</b>
               </th>
             </tr>
@@ -125,7 +125,7 @@ function SectionHeaders(props) {
             </tr>
           </tbody>
         </table>
-      </>
+      </div>
     );
   });
 
