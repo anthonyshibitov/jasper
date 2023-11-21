@@ -1,4 +1,4 @@
-import { calcAddressOffset } from "../peAnalyze";
+import { calcAddressOffset } from "../peHelpers";
 import { useState } from "react";
 import "./FileHeader.css";
 

@@ -1,4 +1,4 @@
-import { calcAddressOffset } from "../peAnalyze";
+import { calcAddressOffset } from "../peHelpers";
 import "./OptHeader.css";
 
 function OptHeader(props) {

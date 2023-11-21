@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import {
   analyze32,
-  returnHexOfBuffer,
   determineArchitecture,
 } from "./peAnalyze";
+import { returnHexOfBuffer } from "./peHelpers"
 import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
 import FileHeader from "./components/FileHeader";

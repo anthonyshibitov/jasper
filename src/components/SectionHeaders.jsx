@@ -1,4 +1,4 @@
-import { calcAddressOffset, hex2string } from "../peAnalyze";
+import { calcAddressOffset, hex2string } from "../peHelpers";
 import "./SectionHeaders.css";
 
 function SectionHeaders(props) {
