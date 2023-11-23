@@ -4,6 +4,7 @@ import {
   createSectionHeader,
   createImageImportDescriptor,
   createImageBoundImportDescriptor,
+  createExportDirectoryTable
 } from "./peDef";
 
 import {
@@ -19,7 +20,7 @@ import {
   convertRVAToFileOffset,
   hex2string,
   getNullTerminatedString,
-  hex2a
+  hex2a,
 } from "./peHelpers";
 
 function determineArchitecture(dataBuffer) {
@@ -367,40 +368,66 @@ function analyze32(dataBuffer) {
 
   constructNormalImports(pe, dataBuffer, arch);
   constructBoundImports(pe, dataBuffer, arch);
+  constructExports(pe, dataBuffer, arch);
   constructRelocs(pe, dataBuffer, arch);
   console.log(pe);
   return pe;
 }
 
-function constructBoundImports(pe, dataBuffer, arch){
+function constructBoundImports(pe, dataBuffer, arch) {
   //Table 11
   const boundImports = [];
   let boundDescriptorTableOffset;
-  if (arch == 32){
-    boundDescriptorTableOffset = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[11].VirtualAddress;
+  if (arch == 32) {
+    boundDescriptorTableOffset =
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[11]
+        .VirtualAddress;
   }
-  if (arch == 64){
-    boundDescriptorTableOffset = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11].VirtualAddress;
+  if (arch == 64) {
+    boundDescriptorTableOffset =
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11]
+        .VirtualAddress;
   }
-  if(boundDescriptorTableOffset == 0) return;
+  if (boundDescriptorTableOffset == 0) return;
   boundDescriptorTableOffset = parseInt(boundDescriptorTableOffset, 16);
   const originalBoundDescriptorTableOffset = boundDescriptorTableOffset;
-  while(retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8) != "0000000000000000"){
-    console.log("current descriptor hex:", retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8));
+  while (
+    retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8) !=
+    "0000000000000000"
+  ) {
+    console.log(
+      "current descriptor hex:",
+      retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8)
+    );
     let boundDescriptor = createImageBoundImportDescriptor();
-    boundDescriptor.TimeDateStamp = retrieveDWORD(dataBuffer, boundDescriptorTableOffset);
-    boundDescriptor.OffsetModuleName = retrieveWORD(dataBuffer, boundDescriptorTableOffset + 4);
-    boundDescriptor.NumberOfModuleForwarderRefs = retrieveWORD(dataBuffer, boundDescriptorTableOffset + 6);
-    boundDescriptor.NameString = getNullTerminatedString(dataBuffer, originalBoundDescriptorTableOffset + parseInt(boundDescriptor.OffsetModuleName, 16));
+    boundDescriptor.TimeDateStamp = retrieveDWORD(
+      dataBuffer,
+      boundDescriptorTableOffset
+    );
+    boundDescriptor.OffsetModuleName = retrieveWORD(
+      dataBuffer,
+      boundDescriptorTableOffset + 4
+    );
+    boundDescriptor.NumberOfModuleForwarderRefs = retrieveWORD(
+      dataBuffer,
+      boundDescriptorTableOffset + 6
+    );
+    boundDescriptor.NameString = getNullTerminatedString(
+      dataBuffer,
+      originalBoundDescriptorTableOffset +
+        parseInt(boundDescriptor.OffsetModuleName, 16)
+    );
     boundImports.push(boundDescriptor);
     console.log("bound import", boundDescriptor);
     boundDescriptorTableOffset += 8;
   }
-  if (arch == 32){
-    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[11].BoundImportDirectoryTable = boundImports;
+  if (arch == 32) {
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[11].BoundImportDirectoryTable =
+      boundImports;
   }
-  if (arch == 64){
-    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11].BoundImportDirectoryTable = boundImports;
+  if (arch == 64) {
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11].BoundImportDirectoryTable =
+      boundImports;
   }
 }
 
@@ -439,6 +466,7 @@ function constructNormalImports(pe, dataBuffer, arch) {
         currentSectionVirtualAddressEnd
     ) {
       importSection = i;
+      break;
     }
   }
 
@@ -614,16 +642,137 @@ function constructNormalImports(pe, dataBuffer, arch) {
   }
 }
 
-function constructRelocs(pe, dataBuffer, arch){
-  if(arch == 32 && parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].VirtualAddress, 16) == 0)
+function constructExports(pe, dataBuffer, arch) {
+  if (
+    arch == 32 &&
+    parseInt(
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0]
+        .VirtualAddress,
+      16
+    ) == 0
+  )
     return;
-  if(arch == 64 && parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].VirtualAddress, 16) == 0)
+  if (
+    arch == 64 &&
+    parseInt(
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0]
+        .VirtualAddress,
+      16
+    ) == 0
+  )
+    return;
+
+  let EDTVirtualAddress;
+
+  if (arch == 32) {
+    EDTVirtualAddress =
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0]
+        .VirtualAddress;
+  }
+
+  if (arch == 64) {
+    EDTVirtualAddress =
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0]
+        .VirtualAddress;
+  }
+
+  //Loop through sections to find which section the export directory is in
+  let exportSection;
+  for (
+    let i = 0;
+    i < parseInt(pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections, 16);
+    i++
+  ) {
+    let currentSectionVirtualAddressStart = parseInt(
+      pe._IMAGE_SECTION_HEADERS[i].VirtualAddress,
+      16
+    );
+    let currentSectionVirtualAddressEnd =
+      parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) +
+      parseInt(pe._IMAGE_SECTION_HEADERS[i].PhyAdd_VirSize, 16);
+    if (
+      parseInt(EDTVirtualAddress, 16) >= currentSectionVirtualAddressStart &&
+      parseInt(EDTVirtualAddress, 16) < currentSectionVirtualAddressEnd
+    ) {
+      exportSection = i;
+      break;
+    }
+  }
+  console.log(`Exports are in section ${exportSection}`);
+  const exportDirectoryTableOffset = parseInt(convertRVAToFileOffset(EDTVirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData), 16);
+  console.log(`Export directory table RVA ${exportDirectoryTableOffset}`);
+
+  // Populate export directory table
+  const exportDirectoryTable = createExportDirectoryTable();
+  exportDirectoryTable.Characteristics = retrieveDWORD(dataBuffer, exportDirectoryTableOffset);
+  exportDirectoryTable.TimeDateStamp = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 4);
+  exportDirectoryTable.MajorVersion = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 8);
+  exportDirectoryTable.MinorVersion = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 10);
+  exportDirectoryTable.Name = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 12);
+  exportDirectoryTable.Base = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 16);
+  exportDirectoryTable.NumberOfFunctions = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 20);
+  exportDirectoryTable.NumberOfNames = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 24);
+  exportDirectoryTable.AddressOfFunctions = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 28);
+  exportDirectoryTable.AddressOfNames = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 32);
+  exportDirectoryTable.AddressOfNameOrdinals = retrieveDWORD(dataBuffer, exportDirectoryTableOffset + 36);
+
+  console.log(exportDirectoryTable);
+
+  const exportAddressTable = [];
+  const exportNameTable = [];
+  const exportNameOrdinalsTable = [];
+
+  // Iterate over all export address table entries
+  // Note, these are RVAs
+  const offsetOfFunctions = convertRVAToFileOffset(exportDirectoryTable.AddressOfFunctions, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
+  const offsetOfNames = convertRVAToFileOffset(exportDirectoryTable.AddressOfNames, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
+  const offsetOfNameOrdinals = convertRVAToFileOffset(exportDirectoryTable.AddressOfNameOrdinals, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
+
+  for(let i = 0; i < exportDirectoryTable.NumberOfFunctions; i++){
+    exportAddressTable.push(retrieveDWORD(dataBuffer, parseInt(offsetOfFunctions, 16) + i * 4));
+  }
+  // console.log("ADDRESSES:", exportAddressTable);
+  for(let i = 0; i < exportDirectoryTable.NumberOfNames; i++){
+    exportNameTable.push(retrieveDWORD(dataBuffer, parseInt(offsetOfNames, 16) + i * 4));
+  }
+  // console.log("NAMES:", exportNameTable);
+  for(let i = 0; i < exportDirectoryTable.NumberOfNames; i++){
+    exportNameOrdinalsTable.push(retrieveWORD(dataBuffer, parseInt(offsetOfNameOrdinals, 16) + i * 2));
+  }
+  // console.log("NAME ORDINALS:", exportNameOrdinalsTable);
+  exportDirectoryTable.exportAddressTable = exportAddressTable;
+  exportDirectoryTable.exportNameTable = exportNameTable;
+  exportDirectoryTable.exportNameOrdinalsTable = exportNameOrdinalsTable;
+
+  if(arch == 32){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].ExportDirectoryTable = exportDirectoryTable;
+  }
+  if(arch == 64){
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].ExportDirectoryTable = exportDirectoryTable;
+  }
+}
+
+function constructRelocs(pe, dataBuffer, arch) {
+  if (
+    arch == 32 &&
+    parseInt(
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5]
+        .VirtualAddress,
+      16
+    ) == 0
+  )
+    return;
+  if (
+    arch == 64 &&
+    parseInt(
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5]
+        .VirtualAddress,
+      16
+    ) == 0
+  )
     return;
 
   /* Relocs found */
 }
 
-export {
-  analyze32,
-  determineArchitecture,
-};
+export { analyze32, determineArchitecture };
