@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
-import {
-  analyze32,
-  determineArchitecture,
-} from "./peAnalyze";
-import { returnHexOfBuffer } from "./peHelpers"
+import { analyze32, determineArchitecture } from "./peAnalyze";
+import { returnHexOfBuffer } from "./peHelpers";
 import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
 import FileHeader from "./components/FileHeader";
@@ -13,6 +10,7 @@ import ImportHeader from "./components/ImportHeader";
 import QuickInfo from "./components/QuickInfo";
 import OptHeader from "./components/OptHeader";
 import NavBar from "./components/NavBar";
+import ExportHeader from './components/ExportHeader';
 
 function hex2a(hex, trim) {
   var str = "";
@@ -65,7 +63,9 @@ function App() {
         if (archLocal == 32 || archLocal == 64) result = analyze32(resultArray);
 
         if (archLocal == -1) {
-          setError("Selected file is not a valid PE file. The DOS / Optional Header magic values may have been corrupted or changed.");
+          setError(
+            "Selected file is not a valid PE file. The DOS / Optional Header magic values may have been corrupted or changed."
+          );
           setRender(true);
           return;
         }
@@ -121,22 +121,27 @@ function App() {
               <input type="file" name="file-upload" id="file-upload" />
               Upload PE File
             </label>
-            <div className="button-under-label">
-              made by sasha... :D
-            </div>
+            <div className="button-under-label">made by sasha... :D</div>
           </div>
         </>
       )}
       {render == true && error == "" && (
         <div className="content-wrapper">
-          <NavBar setShow={setShow} show={show}/>
+          <NavBar setShow={setShow} show={show} pe={pe} arch={arch} />
           {show == "quick" && <QuickInfo quickInfo={quickInfo} />}
-          {show == "dos" && <DosHeader dosHeader={pe._IMAGE_DOS_HEADER} magicAscii={magicAscii} />}
-          {show == "file" && <FileHeader
-            fileHeader={pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER}
-            headerOffset={headerOffset}
-            signature={pe._IMAGE_NT_HEADER.Signature}
-          />}
+          {show == "dos" && (
+            <DosHeader
+              dosHeader={pe._IMAGE_DOS_HEADER}
+              magicAscii={magicAscii}
+            />
+          )}
+          {show == "file" && (
+            <FileHeader
+              fileHeader={pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER}
+              headerOffset={headerOffset}
+              signature={pe._IMAGE_NT_HEADER.Signature}
+            />
+          )}
           {show == "optional" && arch == 32 && (
             <OptHeader
               optionalHeader={pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32}
@@ -151,9 +156,9 @@ function App() {
               arch={arch}
             />
           )}
-          {show == "sections" &&
+          {show == "sections" && (
             <SectionHeaders sectionHeaders={pe._IMAGE_SECTION_HEADERS} />
-          }
+          )}
           {show == "imports" && arch == 32 && (
             <ImportHeader
               importDescriptors={
@@ -168,12 +173,19 @@ function App() {
               }
             />
           )}
+          {show == "exports" && arch == 32 && (
+            <ExportHeader
+              exportDirectoryTable = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].ExportDirectoryTable}
+            />
+          )}
+          {show == "exports" && arch == 64 && (
+            <ExportHeader
+            exportDirectoryTable = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].ExportDirectoryTable}
+            />
+          )}
         </div>
       )}
-      {render == true && error != "" && (
-          <div>{error}</div>
-        )
-      }
+      {render == true && error != "" && <div>{error}</div>}
     </div>
   );
 }

@@ -744,6 +744,46 @@ function constructExports(pe, dataBuffer, arch) {
   exportDirectoryTable.exportNameTable = exportNameTable;
   exportDirectoryTable.exportNameOrdinalsTable = exportNameOrdinalsTable;
 
+  // const exportNameTableStrings = exportNameTable.map((name, index) => {
+  //   console.log(index);
+  //   const nameFileOffset = convertRVAToFileOffset(name, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
+  //   const exportName = getNullTerminatedString(dataBuffer, parseInt(nameFileOffset, 16));
+  //   return exportName;
+  // });
+
+  // const JASPERexportInfo = exportAddressTable.map((address, index) => {
+  //   // NAME (IF APPLICABLE) - ORDINAL - FUNCTION ADDRESS
+  //   // ENUMERATE BY NAME
+
+  // })
+  const ordinalBias = parseInt(exportDirectoryTable.Base, 16);
+  exportDirectoryTable.JASPERexports = [];
+  const visitedFunctionIndices = [];
+  exportNameTable.forEach((name, index) => {
+    const currentNameOffset = convertRVAToFileOffset(name, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
+    const currentName = getNullTerminatedString(dataBuffer, parseInt(currentNameOffset, 16));
+    const currentNameOrdinal = exportNameOrdinalsTable[index];
+    const currentFunction = exportAddressTable[parseInt(currentNameOrdinal, 16)];
+    visitedFunctionIndices.push(parseInt(currentNameOrdinal, 16));
+    exportDirectoryTable.JASPERexports.push({name: currentName, nameRVA: name, ordinal: (parseInt(currentNameOrdinal, 16) + ordinalBias).toString(16), function: currentFunction});
+  });
+
+  // :(
+  visitedFunctionIndices.sort((a, b) => {return a - b});
+  console.log(visitedFunctionIndices);
+
+  // Find ordinals..
+  let visitIndex = 0;
+  for(let i = 0; i < exportDirectoryTable.NumberOfFunctions; i++){
+    if(visitedFunctionIndices[visitIndex] == i){
+      visitIndex++;
+    } else {
+      exportDirectoryTable.JASPERexports.push({ordinal: i + ordinalBias, function: exportAddressTable[i]});
+    }
+  }
+
+  // exportDirectoryTable.exportNameTableStrings = exportNameTableStrings;
+
   if(arch == 32){
     pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].ExportDirectoryTable = exportDirectoryTable;
   }
