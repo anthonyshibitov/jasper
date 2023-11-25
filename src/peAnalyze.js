@@ -728,15 +728,15 @@ function constructExports(pe, dataBuffer, arch) {
   const offsetOfNames = convertRVAToFileOffset(exportDirectoryTable.AddressOfNames, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
   const offsetOfNameOrdinals = convertRVAToFileOffset(exportDirectoryTable.AddressOfNameOrdinals, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
 
-  for(let i = 0; i < exportDirectoryTable.NumberOfFunctions; i++){
+  for(let i = 0; i < parseInt(exportDirectoryTable.NumberOfFunctions, 16); i++){
     exportAddressTable.push(retrieveDWORD(dataBuffer, parseInt(offsetOfFunctions, 16) + i * 4));
   }
   // console.log("ADDRESSES:", exportAddressTable);
-  for(let i = 0; i < exportDirectoryTable.NumberOfNames; i++){
+  for(let i = 0; i < parseInt(exportDirectoryTable.NumberOfNames, 16); i++){
     exportNameTable.push(retrieveDWORD(dataBuffer, parseInt(offsetOfNames, 16) + i * 4));
   }
   // console.log("NAMES:", exportNameTable);
-  for(let i = 0; i < exportDirectoryTable.NumberOfNames; i++){
+  for(let i = 0; i < parseInt(exportDirectoryTable.NumberOfNames, 16); i++){
     exportNameOrdinalsTable.push(retrieveWORD(dataBuffer, parseInt(offsetOfNameOrdinals, 16) + i * 2));
   }
   // console.log("NAME ORDINALS:", exportNameOrdinalsTable);
@@ -765,22 +765,21 @@ function constructExports(pe, dataBuffer, arch) {
     const currentNameOrdinal = exportNameOrdinalsTable[index];
     const currentFunction = exportAddressTable[parseInt(currentNameOrdinal, 16)];
     visitedFunctionIndices.push(parseInt(currentNameOrdinal, 16));
-    exportDirectoryTable.JASPERexports.push({name: currentName, nameRVA: name, ordinal: (parseInt(currentNameOrdinal, 16) + ordinalBias).toString(16), function: currentFunction});
+    exportDirectoryTable.JASPERexports.push({name: currentName, nameRVA: name, ordinal: (parseInt(currentNameOrdinal, 16) + ordinalBias).toString(16).toUpperCase(), function: currentFunction});
   });
 
   // :(
   visitedFunctionIndices.sort((a, b) => {return a - b});
-  console.log(visitedFunctionIndices);
 
   // Find ordinals..
   let visitIndex = 0;
-  for(let i = 0; i < exportDirectoryTable.NumberOfFunctions; i++){
+  for(let i = 0; i < parseInt(exportDirectoryTable.NumberOfFunctions, 16); i++){
     if(visitedFunctionIndices[visitIndex] == i){
       visitIndex++;
     } else {
       // Null functions can result from gaps in ordinals
-      if(parseInt(exportAddressTable[i]) != 0){
-        exportDirectoryTable.JASPERexports.push({ordinal: i + ordinalBias, function: exportAddressTable[i]});
+      if(parseInt(exportAddressTable[i], 16) != 0){
+        exportDirectoryTable.JASPERexports.push({ordinal: (i + ordinalBias).toString(16).toUpperCase(), function: exportAddressTable[i]});
       }
     }
   }
