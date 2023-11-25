@@ -778,7 +778,10 @@ function constructExports(pe, dataBuffer, arch) {
     if(visitedFunctionIndices[visitIndex] == i){
       visitIndex++;
     } else {
-      exportDirectoryTable.JASPERexports.push({ordinal: i + ordinalBias, function: exportAddressTable[i]});
+      // Null functions can result from gaps in ordinals
+      if(parseInt(exportAddressTable[i]) != 0){
+        exportDirectoryTable.JASPERexports.push({ordinal: i + ordinalBias, function: exportAddressTable[i]});
+      }
     }
   }
 
