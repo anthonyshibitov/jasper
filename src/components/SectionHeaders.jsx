@@ -67,53 +67,53 @@ function SectionHeaders(props) {
               <td>Characteristics</td>
               <td>
                 {header.Characteristics}
-                {(parseInt(header.Characteristics, 16) & 0x8) == 0x8 && (
+                {((parseInt(header.Characteristics, 16) & 0x8) >>> 0) == 0x8 && (
                     <div>IMAGE_SCN_TYPE_NO_PAD: The section should not be padded to the next boundary. This flag is obsolete and is replaced by IMAGE_SCN_ALIGN_1BYTES. This is valid only for object files.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x20) == 0x20 && (
+                {((parseInt(header.Characteristics, 16) & 0x20) >>> 0) == 0x20 && (
                     <div>IMAGE_SCN_CNT_CODE: The section contains executable code.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x40) == 0x40 && (
+                {((parseInt(header.Characteristics, 16) & 0x40) >>> 0) == 0x40 && (
                     <div>IMAGE_SCN_CNT_INITIALIZED_DATA: The section contains initialized data.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x80) == 0x80 && (
+                {((parseInt(header.Characteristics, 16) & 0x80) >>> 0) == 0x80 && (
                     <div>IMAGE_SCN_CNT_UNINITIALIZED_DATA: The section contains uninitialized data.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x200) == 0x200 && (
+                {((parseInt(header.Characteristics, 16) & 0x200) >>> 0) == 0x200 && (
                     <div>IMAGE_SCN_LNK_INFO: The section contains comments or other information. The .drectve section has this type. This is valid for object files only.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x800) == 0x800 && (
+                {((parseInt(header.Characteristics, 16) & 0x800) >>> 0) == 0x800 && (
                     <div>IMAGE_SCN_LNK_REMOVE: The section will not become part of the image. This is valid only for object files.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x1000) == 0x1000 && (
+                {((parseInt(header.Characteristics, 16) & 0x1000) >>> 0) == 0x1000 && (
                     <div>IMAGE_SCN_LNK_COMDAT: The section contains COMDAT data. This is valid only for object files.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x8000) == 0x8000 && (
+                {((parseInt(header.Characteristics, 16) & 0x8000) >>> 0) == 0x8000 && (
                     <div>IMAGE_SCN_GPREL: The section contains data referenced through the global pointer (GP).</div>
                 )}
                 {/* PUT ALIGNMENTS IN HERE */}
-                {(parseInt(header.Characteristics, 16) & 0x01000000) == 0x01000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x01000000) >>> 0) == 0x01000000 && (
                     <div>IMAGE_SCN_LNK_NRELOC_OVFL: The section contains extended relocations.</div>
                 )} 
-                {(parseInt(header.Characteristics, 16) & 0x02000000) == 0x02000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x02000000) >>> 0) == 0x02000000 && (
                     <div>IMAGE_SCN_MEM_DISCARDABLE: The section can be discarded as needed.</div>
                 )} 
-                {(parseInt(header.Characteristics, 16) & 0x04000000) == 0x04000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x04000000) >>> 0)== 0x04000000 && (
                     <div>IMAGE_SCN_MEM_NOT_CACHED: The section cannot be cached.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x08000000) == 0x08000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x08000000) >>> 0)== 0x08000000 && (
                     <div>IMAGE_SCN_MEM_NOT_PAGED: The section is not pageable.</div>
                 )} 
-                {(parseInt(header.Characteristics, 16) & 0x10000000) == 0x10000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x10000000) >>> 0)== 0x10000000 && (
                     <div>IMAGE_SCN_MEM_SHARED: The section can be shared in memory.</div>
                 )} 
-                {(parseInt(header.Characteristics, 16) & 0x20000000) == 0x20000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x20000000) >>> 0)== 0x20000000 && (
                     <div>IMAGE_SCN_MEM_EXECUTE: The section can be executed as code.</div>
                 )} 
-                {(parseInt(header.Characteristics, 16) & 0x40000000) == 0x40000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x40000000) >>> 0) == 0x40000000 && (
                     <div>IMAGE_SCN_MEM_READ: The section can be read.</div>
                 )}
-                {(parseInt(header.Characteristics, 16) & 0x80000000) == 0x80000000 && (
+                {((parseInt(header.Characteristics, 16) & 0x80000000) >>> 0) == 0x80000000 && (
                     <div>IMAGE_SCN_MEM_WRITE: The section can be written to.</div>
                 )}
 {/*                 
