@@ -5,39 +5,45 @@ function QuickInfo(props) {
   console.log("quickinfo props", props);
   const info = props.quickInfo;
   const descriptors = info.importedDlls.ImportDirectoryTable;
-  const dllNames = descriptors.map((descriptor, index) => {
-    let bound = false;
-    console.log(descriptor.TimeDateStamp);
-    if (descriptor.TimeDateStamp == "FFFFFFFF") {
-      // -1 as an unsigned DWORD
-      console.log("bound");
-      bound = true;
-    }
-    return (
-      <div key={index}>
-        {descriptor.NameString}{" "}
-        {bound && <span className="ordinal">BOUND</span>}
-      </div>
-    );
-  });
-  const functionNames = descriptors.map((descriptor, index) => {
-    return (
-      <div key={index}>
-        {descriptor.ImportNameList.map((importName, index) => {
-          return (
-            <div key={index}>
-              {descriptor.NameString}:{" "}
-              {importName.name ? (
-                importName.name
-              ) : (
-                <span className="ordinal">Ordinal: {importName.ordinal}</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  });
+  const importsPresent = descriptors != null;
+  let dllNames;
+  let functionNames;
+
+  if (importsPresent) {
+    dllNames = descriptors.map((descriptor, index) => {
+      let bound = false;
+      console.log(descriptor.TimeDateStamp);
+      if (descriptor.TimeDateStamp == "FFFFFFFF") {
+        // -1 as an unsigned DWORD
+        console.log("bound");
+        bound = true;
+      }
+      return (
+        <div key={index}>
+          {descriptor.NameString}{" "}
+          {bound && <span className="ordinal">BOUND</span>}
+        </div>
+      );
+    });
+    functionNames = descriptors.map((descriptor, index) => {
+      return (
+        <div key={index}>
+          {descriptor.ImportNameList.map((importName, index) => {
+            return (
+              <div key={index}>
+                {descriptor.NameString}:{" "}
+                {importName.name ? (
+                  importName.name
+                ) : (
+                  <span className="ordinal">Ordinal: {importName.ordinal}</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    });
+  }
 
   return (
     <div id="quick-info-wrapper">
@@ -69,14 +75,18 @@ function QuickInfo(props) {
             <div className="two-column-item">Number of sections</div>
             <div className="two-column-item">{parseInt(info.sectionCount)}</div>
           </div>
-          <div className="two-column">
-            <div className="two-column-item">Imported DLLs</div>
-            <div className="two-column-item">{dllNames}</div>
-          </div>
-          <div className="two-column">
-            <div className="two-column-item">Imported Functions</div>
-            <div className="two-column-item">{functionNames}</div>
-          </div>
+          {importsPresent && (
+            <>
+              <div className="two-column">
+                <div className="two-column-item">Imported DLLs</div>
+                <div className="two-column-item">{dllNames}</div>
+              </div>
+              <div className="two-column">
+                <div className="two-column-item">Imported Functions</div>
+                <div className="two-column-item">{functionNames}</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -25,22 +25,22 @@ function SectionHeaders(props) {
             <tr>
               <td>0x{calcAddressOffset(header.JASPER_SECTION_OFFSET, 8)}</td>
               <td>PhysicalAddress/VirtualSize</td>
-              <td>{header.PhyAdd_VirSize}</td>
+              <td className={parseInt(header.PhyAdd_VirSize, 16) == 0 ? 'dll-name' : null}>{header.PhyAdd_VirSize}</td>
             </tr>
             <tr>
               <td>0x{calcAddressOffset(header.JASPER_SECTION_OFFSET, 12)}</td>
               <td>VirtualAddress</td>
-              <td>{header.VirtualAddress}</td>
+              <td className={parseInt(header.VirtualAddress, 16) == 0 ? 'dll-name' : null}>{header.VirtualAddress}</td>
             </tr>
             <tr>
               <td>0x{calcAddressOffset(header.JASPER_SECTION_OFFSET, 16)}</td>
               <td>SizeOfRawData</td>
-              <td>{header.SizeOfRawData}</td>
+              <td className={parseInt(header.SizeOfRawData, 16) == 0 ? 'dll-name' : null}>{header.SizeOfRawData}</td>
             </tr>
             <tr>
               <td>0x{calcAddressOffset(header.JASPER_SECTION_OFFSET, 20)}</td>
               <td>PointerToRawData</td>
-              <td>{header.PointerToRawData}</td>
+              <td className={parseInt(header.PointerToRawData, 16) == 0 ? 'dll-name' : null}>{header.PointerToRawData}</td>
             </tr>
             <tr>
               <td>0x{calcAddressOffset(header.JASPER_SECTION_OFFSET, 24)}</td>

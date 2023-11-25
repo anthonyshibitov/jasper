@@ -12,7 +12,12 @@ function NavBar(props){
             <div className="navbar-item" id={(show == 'file' ? 'active' : '')} onClick={() => setShow("file")}>File Header</div>
             <div className="navbar-item" id={(show == 'optional' ? 'active' : '')} onClick={() => setShow("optional")}>Optional Header</div>
             <div className="navbar-item" id={(show == 'sections' ? 'active' : '')} onClick={() => setShow("sections")}>Sections</div>
-            <div className="navbar-item" id={(show == 'imports' ? 'active' : '')} onClick={() => setShow("imports")}>Imports</div>
+            {/* <div className="navbar-item" id={(show == 'imports' ? 'active' : '')} onClick={() => setShow("imports")}>Imports</div> */}
+            {!!((arch == 32 && (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].VirtualAddress, 16) != 0)) |
+            (arch == 64 && (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1].VirtualAddress, 16) != 0)))
+            && 
+                <div className="navbar-item" id={(show == 'imports' ? 'active' : '')} onClick={() => setShow("imports")}>Imports</div>
+            }
             {!!((arch == 32 && (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].VirtualAddress, 16) != 0)) |
             (arch == 64 && (parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].VirtualAddress, 16) != 0)))
             && 

@@ -388,7 +388,7 @@ function constructBoundImports(pe, dataBuffer, arch) {
       pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[11]
         .VirtualAddress;
   }
-  if (boundDescriptorTableOffset == 0) return;
+  if (parseInt(boundDescriptorTableOffset, 16) == 0) return;
   boundDescriptorTableOffset = parseInt(boundDescriptorTableOffset, 16);
   const originalBoundDescriptorTableOffset = boundDescriptorTableOffset;
   while (
@@ -444,6 +444,8 @@ function constructNormalImports(pe, dataBuffer, arch) {
       pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1]
         .VirtualAddress;
   }
+
+  if(parseInt(firstImportDirectoryEntryRVA, 16) == 0) return;
 
   //Loop through sections to find which section the first IDT entry is
   let importSection;
