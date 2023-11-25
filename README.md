@@ -10,5 +10,6 @@ Current progress:
 [X] Interface design  
 [X] Interface redesign. Maybe a tabbed design that other PE explorers use, show hide doesn't work well. Choose new color scheme/layout  
 [X] Refactor `peAnalyze.js` (too much stuff going on in a single file. Move function to a different file)  
-[ ] Remove extra CSS files
-[ ] Support exports
+[ ] Remove extra CSS files  
+[ ] Support exports  
+[ ] Add visual indication in data directory table when a field is null  
