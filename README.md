@@ -12,4 +12,4 @@ Current progress:
 [X] Refactor `peAnalyze.js` (too much stuff going on in a single file. Move function to a different file)  
 [ ] Remove extra CSS files  
 [ ] Support exports  
-[ ] Add visual indication in data directory table when a field is null  
+[X] Add visual indication in data directory table when a field is null  

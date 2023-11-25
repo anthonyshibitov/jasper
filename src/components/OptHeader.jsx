@@ -70,8 +70,8 @@ function OptHeader(props) {
           <td>
             {index}:{dataDirectoryName}
           </td>
-          <td>{directory.VirtualAddress}</td>
-          <td>{directory.Size}</td>
+          <td className={(parseInt(directory.VirtualAddress, 16) == 0) ? 'dll-name' : null}>{directory.VirtualAddress}</td>
+          <td className={(parseInt(directory.Size, 16) == 0) ? 'dll-name' : null}>{directory.Size}</td>
         </tr>
       );
     }
