@@ -76,7 +76,7 @@ function QuickInfo(props) {
           </div>
           <div className="two-column">
             <div className="two-column-item">Number of sections</div>
-            <div className="two-column-item">{parseInt(info.sectionCount)}</div>
+            <div className="two-column-item">{parseInt(info.sectionCount, 16)}</div>
           </div>
           {importsPresent && descriptors != undefined && (
             <>
