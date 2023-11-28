@@ -4,12 +4,15 @@ import "./QuickInfo.css";
 function QuickInfo(props) {
   console.log("quickinfo props", props);
   const info = props.quickInfo;
-  const descriptors = info.importedDlls.ImportDirectoryTable;
-  const importsPresent = descriptors != null;
+  let descriptors;
+  const importsPresent = info.importedDlls != undefined;
+  if(importsPresent){
+    descriptors = info.importedDlls.ImportDirectoryTable;
+  }
   let dllNames;
   let functionNames;
 
-  if (importsPresent) {
+  if (importsPresent && descriptors != undefined) {
     dllNames = descriptors.map((descriptor, index) => {
       let bound = false;
       console.log(descriptor.TimeDateStamp);
@@ -75,7 +78,7 @@ function QuickInfo(props) {
             <div className="two-column-item">Number of sections</div>
             <div className="two-column-item">{parseInt(info.sectionCount)}</div>
           </div>
-          {importsPresent && (
+          {importsPresent && descriptors != undefined && (
             <>
               <div className="two-column">
                 <div className="two-column-item">Imported DLLs</div>

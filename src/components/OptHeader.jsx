@@ -8,8 +8,14 @@ function OptHeader(props) {
 
   console.log(arch, "ARCH");
 
-  const DataDirectories = optionalHeader.DataDirectory.map(
-    (directory, index) => {
+  let hasDataDirectory = false;
+  if (optionalHeader.DataDirectory.length > 0) {
+    hasDataDirectory = true;
+  }
+
+  let DataDirectories;
+  if (hasDataDirectory) {
+    DataDirectories = optionalHeader.DataDirectory.map((directory, index) => {
       let dataDirectoryName;
       switch (index) {
         case 0:
@@ -70,12 +76,20 @@ function OptHeader(props) {
           <td>
             {index}:{dataDirectoryName}
           </td>
-          <td className={(parseInt(directory.VirtualAddress, 16) == 0) ? 'dll-name' : null}>{directory.VirtualAddress}</td>
-          <td className={(parseInt(directory.Size, 16) == 0) ? 'dll-name' : null}>{directory.Size}</td>
+          <td
+            className={
+              parseInt(directory.VirtualAddress, 16) == 0 ? "dll-name" : null
+            }
+          >
+            {directory.VirtualAddress}
+          </td>
+          <td className={parseInt(directory.Size, 16) == 0 ? "dll-name" : null}>
+            {directory.Size}
+          </td>
         </tr>
       );
-    }
-  );
+    });
+  }
 
   console.log("DLL CHARS", parseInt(optionalHeader.DllCharacteristics, 16));
   console.log("DLL HEX", optionalHeader.DllCharacteristics);
@@ -303,16 +317,21 @@ function OptHeader(props) {
       <div className="header-wrapper">
         <div className="header">Data Directories</div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>DIRECTORY NAME</th>
-            <th>RVA</th>
-            <th>SIZE</th>
-          </tr>
-        </thead>
-        <tbody>{DataDirectories}</tbody>
-      </table>
+      {hasDataDirectory && (
+        <table>
+          <thead>
+            <tr>
+              <th>DIRECTORY NAME</th>
+              <th>RVA</th>
+              <th>SIZE</th>
+            </tr>
+          </thead>
+          <tbody>{DataDirectories}</tbody>
+        </table>
+      )}
+      {!hasDataDirectory &&
+        <div className="dll-name">FILE HAS NO DATA DIRECTORY</div>
+      }
     </div>
   );
 }
