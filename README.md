@@ -13,4 +13,5 @@ Current progress:
 [ ] Remove extra CSS files  
 [X] Support exports  
 [X] Add visual indication in data directory table when a field is null  
-[X] Add visual indication in section headers when a field is null
+[X] Add visual indication in section headers when a field is null  
+[ ] Support relocs  

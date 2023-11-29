@@ -908,18 +908,111 @@ function constructExports(pe, dataBuffer, arch) {
 }
 
 function constructRelocs(pe, dataBuffer, arch) {
+  let RelocsVirtualAddress;
+  let RelocsSize;
   if (arch == 32) {
-    if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0] == undefined || parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0], 16) == 0){
+    if (
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5] ==
+        undefined ||
+      parseInt(
+        pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].VirtualAddress,
+        16
+      ) == 0
+    ) {
       return;
     }
+    RelocsVirtualAddress =
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5]
+        .VirtualAddress;
+    RelocsSize = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].Size;
   }
+
   if (arch == 64) {
-    if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0] == undefined || parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0], 16) == 0){
+    if (
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5] ==
+        undefined ||
+      parseInt(
+        pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].VirtualAddress,
+        16
+      ) == 0
+    ) {
       return;
+    }
+    RelocsVirtualAddress =
+      pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5]
+        .VirtualAddress;
+    RelocsSize = pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Size;
+
+  }
+
+  console.log("relocs are at", RelocsVirtualAddress);
+  console.log("relocs table size", RelocsSize);
+
+  let relocSection;
+  for (
+    let i = 0;
+    i < parseInt(pe._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections, 16);
+    i++
+  ) {
+    let currentSectionVirtualAddressStart = parseInt(
+      pe._IMAGE_SECTION_HEADERS[i].VirtualAddress,
+      16
+    );
+    let currentSectionVirtualAddressEnd =
+      parseInt(pe._IMAGE_SECTION_HEADERS[i].VirtualAddress, 16) +
+      parseInt(pe._IMAGE_SECTION_HEADERS[i].PhyAdd_VirSize, 16);
+    if (
+      parseInt(RelocsVirtualAddress, 16) >= currentSectionVirtualAddressStart &&
+      parseInt(RelocsVirtualAddress, 16) < currentSectionVirtualAddressEnd
+    ) {
+      relocSection = i;
+      break;
     }
   }
 
-  /* Relocs found */
+  console.log("reloc section", relocSection);
+
+  let RelocsFileOffset = convertRVAToFileOffset(RelocsVirtualAddress, pe._IMAGE_SECTION_HEADERS[relocSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[relocSection].PointerToRawData);
+
+  let currentOffset = 0;
+  const relocs = [];
+  let blockCounter = 0;
+  
+  while(currentOffset < parseInt(RelocsSize, 16)){
+    blockCounter = currentOffset;
+    let currentPageRVA = retrieveDWORD(dataBuffer, parseInt(RelocsFileOffset, 16) + currentOffset);
+    currentOffset += 4;
+    let currentBlockSize = retrieveDWORD(dataBuffer, parseInt(RelocsFileOffset, 16) + currentOffset);
+    currentOffset += 4;
+
+    // console.log(`page RVA ${currentPageRVA} block size ${currentBlockSize}`);
+
+    let relocations = [];
+
+    while(parseInt(RelocsFileOffset, 16) + currentOffset < parseInt(RelocsFileOffset, 16) + parseInt(currentBlockSize, 16) + blockCounter)
+    {
+      // console.log("current pos", parseInt(RelocsFileOffset, 16) + currentOffset);
+      // console.log("max pos", parseInt(RelocsFileOffset, 16) + parseInt(currentBlockSize, 16) + blockCounter);
+      // console.log("typeoffsets", (parseInt(currentBlockSize, 16) - 8 ) / 2);
+      let currentTypeOffset = retrieveWORD(dataBuffer, parseInt(RelocsFileOffset, 16) + currentOffset);
+      let offset = parseInt(currentTypeOffset, 16) & 0x0FFF;
+      let type = (parseInt(currentTypeOffset, 16) & 0xF000) >> 12;
+      // console.log("offset", offset.toString(16));
+      // console.log("type", type.toString(16));
+      currentOffset += 2;
+      relocations.push({offset: offset.toString(16), type: type.toString(16)});
+    }
+    relocs.push({pageRVA: currentPageRVA, blockSize: currentBlockSize, relocations});
+  }
+
+  if (arch == 32) {
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].Relocations = relocs;
+  }
+  if (arch == 64) {
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Relocations = relocs;
+  }
+  
+  console.log(relocs);
 }
 
 export { analyze32, determineArchitecture };
