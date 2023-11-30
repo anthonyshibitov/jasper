@@ -1,6 +1,5 @@
 function ExportHeader(props) {
   let exports = props.exportDirectoryTable.JASPERexports;
-  console.log("EXPORT RECEIVED:", exports);
   let exportList = exports.map((exp, index) => {
     if (exp.hasOwnProperty("name")) {
       //Named export

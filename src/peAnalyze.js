@@ -406,10 +406,6 @@ function constructBoundImports(pe, dataBuffer, arch) {
     retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8) !=
     "0000000000000000"
   ) {
-    console.log(
-      "current descriptor hex:",
-      retrieveXBytes(dataBuffer, boundDescriptorTableOffset, 8)
-    );
     let boundDescriptor = createImageBoundImportDescriptor();
     boundDescriptor.TimeDateStamp = retrieveDWORD(
       dataBuffer,
@@ -429,7 +425,6 @@ function constructBoundImports(pe, dataBuffer, arch) {
         parseInt(boundDescriptor.OffsetModuleName, 16)
     );
     boundImports.push(boundDescriptor);
-    console.log("bound import", boundDescriptor);
     boundDescriptorTableOffset += 8;
   }
   if (arch == 32) {
@@ -516,7 +511,6 @@ function constructNormalImports(pe, dataBuffer, arch) {
     numberOfImportDescriptors++;
     currentImportDescriptorOffset += 20;
   }
-  console.log("number of import descriptors:", numberOfImportDescriptors);
 
   if (arch == 32) {
     pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1].ImportDirectoryTable =
@@ -618,7 +612,6 @@ function constructNormalImports(pe, dataBuffer, arch) {
       if (arch == 32) {
         let bitCheck = parseInt(rva, 16) & 0x80000000;
         if (bitCheck != 0) {
-          console.log("ordinal import..");
           let ordinal = parseInt(rva, 16) & 0xffff;
           ordinal = "0x" + ordinal.toString(16).toUpperCase();
           imageImportDescriptor.ImportNameList.push({ ordinal }); //only want the lower 16 bits in 32bit file
@@ -639,9 +632,6 @@ function constructNormalImports(pe, dataBuffer, arch) {
       if (arch == 64) {
         let bitCheck = BigInt(parseInt(rva, 16)) & BigInt("0x8000000000000000");
         if (bitCheck != 0) {
-          console.log("ordinal import..");
-          console.log(rva);
-          console.log(BigInt("0x" + rva));
           const ordinal = BigInt("0x" + rva) & 0xffffn;
           imageImportDescriptor.ImportNameList.push({
             ordinal: parseInt(ordinal).toString(16),
@@ -722,7 +712,6 @@ function constructExports(pe, dataBuffer, arch) {
       break;
     }
   }
-  console.log(`Exports are in section ${exportSection}`);
   const exportDirectoryTableOffset = parseInt(
     convertRVAToFileOffset(
       EDTVirtualAddress,
@@ -731,7 +720,6 @@ function constructExports(pe, dataBuffer, arch) {
     ),
     16
   );
-  console.log(`Export directory table RVA ${exportDirectoryTableOffset}`);
 
   // Populate export directory table
   const exportDirectoryTable = createExportDirectoryTable();
@@ -813,35 +801,20 @@ function constructExports(pe, dataBuffer, arch) {
       retrieveDWORD(dataBuffer, parseInt(offsetOfFunctions, 16) + i * 4)
     );
   }
-  // console.log("ADDRESSES:", exportAddressTable);
   for (let i = 0; i < parseInt(exportDirectoryTable.NumberOfNames, 16); i++) {
     exportNameTable.push(
       retrieveDWORD(dataBuffer, parseInt(offsetOfNames, 16) + i * 4)
     );
   }
-  // console.log("NAMES:", exportNameTable);
   for (let i = 0; i < parseInt(exportDirectoryTable.NumberOfNames, 16); i++) {
     exportNameOrdinalsTable.push(
       retrieveWORD(dataBuffer, parseInt(offsetOfNameOrdinals, 16) + i * 2)
     );
   }
-  // console.log("NAME ORDINALS:", exportNameOrdinalsTable);
   exportDirectoryTable.exportAddressTable = exportAddressTable;
   exportDirectoryTable.exportNameTable = exportNameTable;
   exportDirectoryTable.exportNameOrdinalsTable = exportNameOrdinalsTable;
 
-  // const exportNameTableStrings = exportNameTable.map((name, index) => {
-  //   console.log(index);
-  //   const nameFileOffset = convertRVAToFileOffset(name, pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData);
-  //   const exportName = getNullTerminatedString(dataBuffer, parseInt(nameFileOffset, 16));
-  //   return exportName;
-  // });
-
-  // const JASPERexportInfo = exportAddressTable.map((address, index) => {
-  //   // NAME (IF APPLICABLE) - ORDINAL - FUNCTION ADDRESS
-  //   // ENUMERATE BY NAME
-
-  // })
   const ordinalBias = parseInt(exportDirectoryTable.Base, 16);
   exportDirectoryTable.JASPERexports = [];
   const visitedFunctionIndices = [];
@@ -894,8 +867,6 @@ function constructExports(pe, dataBuffer, arch) {
     }
   }
 
-  // exportDirectoryTable.exportNameTableStrings = exportNameTableStrings;
-
   if (arch == 32) {
     pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].ExportDirectoryTable =
       exportDirectoryTable;
@@ -944,9 +915,6 @@ function constructRelocs(pe, dataBuffer, arch) {
 
   }
 
-  console.log("relocs are at", RelocsVirtualAddress);
-  console.log("relocs table size", RelocsSize);
-
   let relocSection;
   for (
     let i = 0;
@@ -969,8 +937,6 @@ function constructRelocs(pe, dataBuffer, arch) {
     }
   }
 
-  console.log("reloc section", relocSection);
-
   let RelocsFileOffset = convertRVAToFileOffset(RelocsVirtualAddress, pe._IMAGE_SECTION_HEADERS[relocSection].VirtualAddress, pe._IMAGE_SECTION_HEADERS[relocSection].PointerToRawData);
 
   let currentOffset = 0;
@@ -984,20 +950,13 @@ function constructRelocs(pe, dataBuffer, arch) {
     let currentBlockSize = retrieveDWORD(dataBuffer, parseInt(RelocsFileOffset, 16) + currentOffset);
     currentOffset += 4;
 
-    // console.log(`page RVA ${currentPageRVA} block size ${currentBlockSize}`);
-
     let relocations = [];
 
     while(parseInt(RelocsFileOffset, 16) + currentOffset < parseInt(RelocsFileOffset, 16) + parseInt(currentBlockSize, 16) + blockCounter)
     {
-      // console.log("current pos", parseInt(RelocsFileOffset, 16) + currentOffset);
-      // console.log("max pos", parseInt(RelocsFileOffset, 16) + parseInt(currentBlockSize, 16) + blockCounter);
-      // console.log("typeoffsets", (parseInt(currentBlockSize, 16) - 8 ) / 2);
       let currentTypeOffset = retrieveWORD(dataBuffer, parseInt(RelocsFileOffset, 16) + currentOffset);
       let offset = parseInt(currentTypeOffset, 16) & 0x0FFF;
       let type = (parseInt(currentTypeOffset, 16) & 0xF000) >> 12;
-      // console.log("offset", offset.toString(16));
-      // console.log("type", type.toString(16));
       currentOffset += 2;
       relocations.push({offset: offset.toString(16), type: type.toString(16)});
     }
@@ -1005,13 +964,11 @@ function constructRelocs(pe, dataBuffer, arch) {
   }
 
   if (arch == 32) {
-    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].Relocations = relocs;
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].Pages = relocs;
   }
   if (arch == 64) {
-    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Relocations = relocs;
-  }
-  
-  console.log(relocs);
+    pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Pages = relocs;
+  }  
 }
 
 export { analyze, determineArchitecture };

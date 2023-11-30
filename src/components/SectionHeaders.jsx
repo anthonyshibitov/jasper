@@ -9,11 +9,8 @@ function SectionHeaders(props) {
   let sectionHeader;
   if (hasSections) {
     sectionHeader = props.sectionHeaders.map((header, index) => {
-      console.log(parseInt(header.Characteristics, 16));
-      console.log(header.Characteristics);
       return (
         <div key={index}>
-          {/* <div>Section name: {hex2string(header.Name)}</div> */}
           <table>
             <thead>
               <tr>

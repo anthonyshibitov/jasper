@@ -6,8 +6,6 @@ function OptHeader(props) {
   const headerOffset = props.headerOffset;
   const arch = props.arch;
 
-  console.log(arch, "ARCH");
-
   let hasDataDirectory = false;
   if (optionalHeader.DataDirectory.length > 0) {
     hasDataDirectory = true;
@@ -90,9 +88,6 @@ function OptHeader(props) {
       );
     });
   }
-
-  console.log("DLL CHARS", parseInt(optionalHeader.DllCharacteristics, 16));
-  console.log("DLL HEX", optionalHeader.DllCharacteristics);
 
   return (
     <div id="optional-header-wrapper">

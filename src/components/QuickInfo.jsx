@@ -2,7 +2,6 @@ import { useState } from "react";
 import "./QuickInfo.css";
 
 function QuickInfo(props) {
-  console.log("quickinfo props", props);
   const info = props.quickInfo;
   let descriptors;
   const importsPresent = info.importedDlls != undefined;
@@ -15,10 +14,7 @@ function QuickInfo(props) {
   if (importsPresent && descriptors != undefined) {
     dllNames = descriptors.map((descriptor, index) => {
       let bound = false;
-      console.log(descriptor.TimeDateStamp);
       if (descriptor.TimeDateStamp == "FFFFFFFF") {
-        // -1 as an unsigned DWORD
-        console.log("bound");
         bound = true;
       }
       return (

@@ -10,6 +10,7 @@ import QuickInfo from "./components/QuickInfo";
 import OptHeader from "./components/OptHeader";
 import NavBar from "./components/NavBar";
 import ExportHeader from './components/ExportHeader';
+import Relocations from "./components/Relocations";
 
 function App() {
   const [pe, setPe] = useState(createPe());
@@ -154,6 +155,9 @@ function App() {
             <ExportHeader
             exportDirectoryTable = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].ExportDirectoryTable}
             />
+          )}
+          {show == "relocs" && (
+            <Relocations />
           )}
         </div>
       )}

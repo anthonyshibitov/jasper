@@ -3,7 +3,6 @@ import "./DosHeader.css";
 
 function DosHeader(props) {
   const dosHeader = props.dosHeader;
-
   return (
     <div id="dos-header-wrapper">
       <div className="header-wrapper">

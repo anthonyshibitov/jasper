@@ -2,7 +2,6 @@ import { Fragment } from "react";
 import "./ImportHeader.css";
 
 function ImportHeader(props) {
-  console.log(props.importDescriptors.ImportDirectoryTable);
   const descriptors = props.importDescriptors.ImportDirectoryTable.map(
     (descriptor, index) => {
       const functionNameList = descriptor.ImportNameList;
