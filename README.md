@@ -15,3 +15,5 @@ Current progress:
 [X] Add visual indication in data directory table when a field is null  
 [X] Add visual indication in section headers when a field is null  
 [ ] Support relocs  
+[ ] Improve code quality. Consistent naming conventions, well defined objects, readable code, etc
+[ ] Basic test coverage

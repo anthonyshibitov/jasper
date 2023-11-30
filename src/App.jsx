@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { analyze32, determineArchitecture } from "./peAnalyze";
-import { returnHexOfBuffer } from "./peHelpers";
+import { analyze, determineArchitecture } from "./peAnalyze";
 import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
 import FileHeader from "./components/FileHeader";
@@ -12,25 +11,8 @@ import OptHeader from "./components/OptHeader";
 import NavBar from "./components/NavBar";
 import ExportHeader from './components/ExportHeader';
 
-function hex2a(hex, trim) {
-  var str = "";
-  for (var i = 0; i < hex.length; i += 2) {
-    var v = parseInt(hex.substr(i, 2), 16);
-    if (v) {
-      str += String.fromCharCode(v);
-    }
-  }
-  return str.split("").reverse().join("");
-}
-
 function App() {
-  const [size, setSize] = useState(0);
-  const [name, setName] = useState("null");
-  const [type, setType] = useState("null");
   const [pe, setPe] = useState(createPe());
-  const [hex, setHex] = useState("");
-  const [magicAscii, setMagicAscii] = useState("");
-  const [signatureAscii, setSignatureAscii] = useState("");
   const [headerOffset, setHeaderOffset] = useState("");
   const [render, setRender] = useState(false);
   const [quickInfo, setQuickInfo] = useState({});
@@ -43,12 +25,7 @@ function App() {
     const uploadElement = document.getElementById("file-upload");
     uploadElement.addEventListener("change", () => {
       const file = uploadElement.files[0];
-      setSize(file.size);
-      setName(file.name);
-      setType(file.type);
       setPe(createPe());
-      setMagicAscii("");
-      setSignatureAscii("");
 
       const reader = new FileReader();
 
@@ -60,7 +37,7 @@ function App() {
         setArch(determineArchitecture(resultArray));
         const archLocal = determineArchitecture(resultArray);
         let result;
-        if (archLocal == 32 || archLocal == 64) result = analyze32(resultArray);
+        if (archLocal == 32 || archLocal == 64) result = analyze(resultArray);
 
         if (archLocal == -1) {
           setError(
@@ -70,13 +47,8 @@ function App() {
           return;
         }
 
-        // SUPER MEMORY INTENSIVE!!
-        // setHex(returnHexOfBuffer(reader.result));
-
-        setMagicAscii(hex2a(result._IMAGE_DOS_HEADER.e_magic));
         setPe(result);
         setHeaderOffset(result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, ""));
-        setSignatureAscii(hex2a(result._IMAGE_NT_HEADER.Signature));
         if (archLocal == 32) {
           setQuickInfo({
             name: file.name,
@@ -132,7 +104,7 @@ function App() {
           {show == "dos" && (
             <DosHeader
               dosHeader={pe._IMAGE_DOS_HEADER}
-              magicAscii={magicAscii}
+              magicAscii={pe._IMAGE_DOS_HEADER.e_magic}
             />
           )}
           {show == "file" && (

@@ -8,7 +8,6 @@ import {
 } from "./peDef";
 
 import {
-  returnHexOfBuffer,
   retrieveXBytes,
   retrieveStringXBytes,
   retrieveQWORD,
@@ -39,7 +38,7 @@ function determineArchitecture(dataBuffer) {
   return -1;
 }
 
-function analyze32(dataBuffer) {
+function analyze(dataBuffer) {
   const arch = determineArchitecture(dataBuffer);
   let pe;
   if (arch == 32) {
@@ -1015,4 +1014,4 @@ function constructRelocs(pe, dataBuffer, arch) {
   console.log(relocs);
 }
 
-export { analyze32, determineArchitecture };
+export { analyze, determineArchitecture };
