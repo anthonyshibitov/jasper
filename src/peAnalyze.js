@@ -15,9 +15,7 @@ import {
   retrieveWORD,
   retrieveBYTE,
   toHex,
-  calcAddressOffset,
   convertRVAToFileOffset,
-  hex2string,
   getNullTerminatedString,
   hex2a,
 } from "./peHelpers";

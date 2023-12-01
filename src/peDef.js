@@ -134,9 +134,9 @@ const createExportDirectoryTable = function () {
     Base: null, //DWORD
     NumberOfFunctions: null, //DWORD
     NumberOfNames: null, //DWORD
-    AddressOfFunctions: null, //DWORD
-    AddressOfNames: null, //DWORD
-    AddressOfNameOrdinals: null, //DWORD
+    AddressOfFunctions: null, //DWORD - POINTER, treated as an array in JASPER
+    AddressOfNames: null, //DWORD - POINTER, treated as an array in JASPER
+    AddressOfNameOrdinals: null, //DWORD - POINTER, treated as an array in JASPER
   };
 };
 

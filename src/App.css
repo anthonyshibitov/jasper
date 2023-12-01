@@ -83,3 +83,28 @@ input {
   font-size: 0.75rem;
   color: var(--accent);
 }
+
+/* HEADER CSS */
+
+td, th { 
+  padding: 0.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border: 2px solid var(--light-bg);
+}
+
+.third-color td:nth-child(3), .third-color th:nth-child(3){
+  width: 100%;
+  color: var(--accent);
+}
+
+table {
+  width: 100%;
+  background-color: var(--dark-bg);
+  border-spacing: 0px;
+  border: 1px solid var(--light-bg);
+}
+
+th {
+  text-align: left;
+}
