@@ -98,6 +98,11 @@ td, th {
   color: var(--accent);
 }
 
+.second-color td:nth-child(2), .second-color th:nth-child(2){
+  /* width: 100%; */
+  color: var(--accent);
+}
+
 table {
   width: 100%;
   background-color: var(--dark-bg);
@@ -105,6 +110,15 @@ table {
   border: 1px solid var(--light-bg);
 }
 
+table td {
+  vertical-align: top;
+}
+
 th {
   text-align: left;
 }
+
+.ordinal {
+  color: orange;
+}
+

@@ -9,7 +9,7 @@
   padding-left: 0.5rem;
 }
 
-.two-column {
+/* .two-column {
   background-color: var(--dark-bg);
   display: flex;
   flex-direction: row;
@@ -29,11 +29,11 @@
 .two-column-item:nth-child(2) {
   flex-grow: 4;
   color: var(--accent);
-}
+} */
 
-.table {
+/* .table {
     border: 1px solid var(--light-bg);
-}
+} */
 
 .header-wrapper {
     display: flex;
@@ -60,6 +60,3 @@
     padding-bottom: 1rem;
 }
 
-.ordinal {
-  color: orange;
-}
