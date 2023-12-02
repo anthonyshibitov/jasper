@@ -1,25 +1,24 @@
 function Relocations(props) {
   const relocs = props.relocs;
 
-  const relocationTemplate = relocs.map((reloc, index) => {
-    console.log("RELOCC", reloc);
-    const relocationTemplate2 = reloc.relocations.map((reloc2, index2) => {
+  const pageTemplate = relocs.map((page, pageIndex) => {
+    const relocationTemplate = page.relocations.map((reloc, relocIndex) => {
       return (
-        <tr key={index2}>
-          <td>{reloc.pageRVA}</td>
-          <td>{reloc2.type}</td>
-          <td>{reloc2.offset}</td>
+        <tr key={relocIndex}>
+          <td>{page.pageRVA}</td>
+          <td>{reloc.type}</td>
+          <td>{reloc.offset}</td>
         </tr>
       );
     });
     return (
       <>
-        <tr key={index}>
+        <tr key={pageIndex}>
           <td colSpan="3" className="dll-name">
-            {reloc.pageRVA}
+            {page.pageRVA}
           </td>
         </tr>
-        {relocationTemplate2}
+        {relocationTemplate}
       </>
     );
   });
@@ -41,7 +40,7 @@ function Relocations(props) {
               <th>OFFSET</th>
             </tr>
           </thead>
-          <tbody>{relocationTemplate}</tbody>
+          <tbody>{pageTemplate}</tbody>
         </table>
       </div>
     </div>
