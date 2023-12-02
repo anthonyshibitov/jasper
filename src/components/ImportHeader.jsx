@@ -41,7 +41,10 @@ function ImportHeader(props) {
 
   return (
     <div className="import-wrapper">
-      <div>Import Descriptors</div>
+      <div className="header-wrapper">
+        <div className="header">Imports</div>
+      </div>
+      <div className="header-sub-text">Imports</div>
       <div className="table-wrapper">
         <table>
           <thead>

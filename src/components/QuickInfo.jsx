@@ -54,44 +54,40 @@ function QuickInfo(props) {
           A quick glance at important attributes.
         </div>
         <table className="second-color">
-          <tr>
-            <td>File name</td>
-            <td>{info.name}</td>
-          </tr>
-          <tr>
-            <td>File size</td>
-            <td>
-              {getReadableFileSizeString(info.size)}
-            </td>
-          </tr>
-          <tr>
-            <td>Platform</td>
-            <td>
-              {info.platform == "010B" ? "32-bit" : "64-bit"}
-            </td>
-          </tr>
-          <tr>
-            <td>Number of sections</td>
-            <td>
-              {parseInt(info.sectionCount, 16)}
-            </td>
-          </tr>
-          {importsPresent && descriptors != undefined && (
-            <>
-              <tr>
-                <td>Imported DLLs</td>
-                <td>{dllNames}</td>
-              </tr>
-              <tr>
-                <td>Imported Functions</td>
-                <td>{functionNames}</td>
-              </tr>
-            </>
-          )}
+          <tbody>
+            <tr>
+              <td>File name</td>
+              <td>{info.name}</td>
+            </tr>
+            <tr>
+              <td>File size</td>
+              <td>{getReadableFileSizeString(info.size)}</td>
+            </tr>
+            <tr>
+              <td>Platform</td>
+              <td>{info.platform == "010B" ? "32-bit" : "64-bit"}</td>
+            </tr>
+            <tr>
+              <td>Number of sections</td>
+              <td>{parseInt(info.sectionCount, 16)}</td>
+            </tr>
+            {importsPresent && descriptors != undefined && (
+              <>
+                <tr>
+                  <td>Imported DLLs</td>
+                  <td>{dllNames}</td>
+                </tr>
+                <tr>
+                  <td>Imported Functions</td>
+                  <td>{functionNames}</td>
+                </tr>
+              </>
+            )}
+          </tbody>
         </table>
       </div>
     </div>
-/*
+    /*
       <div id="quick-info-wrapper">
         <div className="header-wrapper" onClick={() => toggle()}>
           <div className="header">Quick Information</div>

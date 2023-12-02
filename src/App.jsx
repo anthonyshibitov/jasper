@@ -156,8 +156,11 @@ function App() {
             exportDirectoryTable = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].ExportDirectoryTable}
             />
           )}
-          {show == "relocs" && (
-            <Relocations />
+          {show == "relocs" && arch == 32 && (
+            <Relocations relocs = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].Pages}/>
+          )}
+          {show == "relocs" && arch == 64 && (
+            <Relocations relocs = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Pages}/>
           )}
         </div>
       )}

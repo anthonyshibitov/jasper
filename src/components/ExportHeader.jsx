@@ -25,7 +25,10 @@ function ExportHeader(props) {
 
   return (
     <div className="import-wrapper">
-      <div>Exports</div>
+      <div className="header-wrapper">
+        <div className="header">Exports</div>
+      </div>
+      <div className="header-sub-text">Exports</div>
       <div className="table-wrapper">
         <table>
           <thead>

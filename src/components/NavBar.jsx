@@ -7,6 +7,7 @@ function NavBar(props){
     const arch = props.arch;
     let hasImports = false;
     let hasExports = false;
+    let hasRelocs = false;
 
     if(arch == 32){
         if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1] != undefined){
@@ -19,6 +20,11 @@ function NavBar(props){
                 hasExports = true;
             }
         }
+        if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5] != undefined){
+            if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].VirtualAddress, 16) != 0){
+                hasRelocs = true;
+            }
+        }
     }
     if(arch == 64){
         if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1] != undefined){
@@ -29,6 +35,11 @@ function NavBar(props){
         if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0] != undefined){
             if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].VirtualAddress, 16) != 0){
                 hasExports = true;
+            }
+        }
+        if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5] != undefined){
+            if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].VirtualAddress, 16) != 0){
+                hasRelocs = true;
             }
         }
     }
@@ -48,7 +59,10 @@ function NavBar(props){
             && 
                 <div className="navbar-item" id={(show == 'exports' ? 'active' : '')} onClick={() => setShow("exports")}>Exports</div>
             }
+            {hasRelocs
+            &&
             <div className="navbar-item" id={(show == 'relocs' ? 'active' : '')} onClick={() => setShow("relocs")}>Relocs</div>
+            }
         </div>
     )
 }

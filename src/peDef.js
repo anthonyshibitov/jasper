@@ -118,6 +118,12 @@ pe: {
     - same contents of ExportDirectoryTable in PE
   }
 
+# Relocs
+
+  props.Pages {
+    - same contents of Pages in PE
+  }
+
 */
 
 /* ------------------------------------- */

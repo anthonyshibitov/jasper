@@ -956,7 +956,7 @@ function constructRelocs(pe, dataBuffer, arch) {
       let offset = parseInt(currentTypeOffset, 16) & 0x0FFF;
       let type = (parseInt(currentTypeOffset, 16) & 0xF000) >> 12;
       currentOffset += 2;
-      relocations.push({offset: offset.toString(16), type: type.toString(16)});
+      relocations.push({offset: offset.toString(16).toUpperCase(), type: type.toString(16).toUpperCase()});
     }
     relocs.push({pageRVA: currentPageRVA, blockSize: currentBlockSize, relocations});
   }
