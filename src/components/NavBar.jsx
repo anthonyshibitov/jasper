@@ -49,7 +49,7 @@ function NavBar(props){
             <div className="navbar-item" id={(show == 'quick' ? 'active' : '')} onClick={() => setShow("quick")}>Quick Info</div>
             <div className="navbar-item" id={(show == 'dos' ? 'active': '')} onClick={() => setShow("dos")}>DOS Header</div>
             <div className="navbar-item" id={(show == 'file' ? 'active' : '')} onClick={() => setShow("file")}>File Header</div>
-            <div className="navbar-item" id={(show == 'optional' ? 'active' : '')} onClick={() => setShow("optional")}>Optional Header</div>
+            <div className="navbar-item" id={(show == 'optional' ? 'active' : '')} onClick={() => setShow("optional")}>Opt Header</div>
             <div className="navbar-item" id={(show == 'sections' ? 'active' : '')} onClick={() => setShow("sections")}>Sections</div>
             {hasImports
             && 

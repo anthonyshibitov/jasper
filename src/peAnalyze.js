@@ -52,6 +52,8 @@ function analyze(dataBuffer) {
   constructBoundImports(pe, dataBuffer, arch);
   constructExports(pe, dataBuffer, arch);
   constructRelocs(pe, dataBuffer, arch);
+
+  // DEBUG
   console.log(pe);
   return pe;
 }

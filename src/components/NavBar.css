@@ -20,6 +20,7 @@
     border-bottom: 1px solid white;
     white-space: nowrap;
     text-align: center;
+    cursor: pointer;
 }
 
 .navbar-item:hover{
