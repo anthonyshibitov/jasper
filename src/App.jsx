@@ -9,7 +9,7 @@ import ImportHeader from "./components/ImportHeader";
 import QuickInfo from "./components/QuickInfo";
 import OptHeader from "./components/OptHeader";
 import NavBar from "./components/NavBar";
-import ExportHeader from './components/ExportHeader';
+import ExportHeader from "./components/ExportHeader";
 import Relocations from "./components/Relocations";
 
 function App() {
@@ -96,6 +96,14 @@ function App() {
             </label>
             <div className="button-under-label">made by sasha... :D</div>
           </div>
+          <div className="info-wrapper">
+            <div className="info-header">What is this?</div>
+            <span>JASPER is a Portable Executable reversing tool for 32 and 64-bit files implemented entirely in JavaScript. Wanna run it locally? Fork me on <a href="https://github.com/anthonyshibitov/jasper">Github!</a></span>
+            <div className="info-header">What does it support?</div>
+            <span>Currently it will parse 32 and 64 bit PE files. It should be able to successfully parse most files as long as they aren't extremely malformed. If your file doesn't process, please consider opening an issue on <a href="https://github.com/anthonyshibitov/jasper">Github</a> so it can be fixed.</span>
+            <div className="info-header">Contact</div>
+            My email is available on my Github profile. Psst.. I'm currently looking for work! :)
+          </div>
         </>
       )}
       {render == true && error == "" && (
@@ -148,19 +156,35 @@ function App() {
           )}
           {show == "exports" && arch == 32 && (
             <ExportHeader
-              exportDirectoryTable = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].ExportDirectoryTable}
+              exportDirectoryTable={
+                pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0]
+                  .ExportDirectoryTable
+              }
             />
           )}
           {show == "exports" && arch == 64 && (
             <ExportHeader
-            exportDirectoryTable = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].ExportDirectoryTable}
+              exportDirectoryTable={
+                pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0]
+                  .ExportDirectoryTable
+              }
             />
           )}
           {show == "relocs" && arch == 32 && (
-            <Relocations relocs = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5].Pages}/>
+            <Relocations
+              relocs={
+                pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[5]
+                  .Pages
+              }
+            />
           )}
           {show == "relocs" && arch == 64 && (
-            <Relocations relocs = {pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Pages}/>
+            <Relocations
+              relocs={
+                pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5]
+                  .Pages
+              }
+            />
           )}
         </div>
       )}
