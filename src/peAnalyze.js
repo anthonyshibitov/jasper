@@ -52,6 +52,7 @@ function analyze(dataBuffer) {
   constructBoundImports(pe, dataBuffer, arch);
   constructExports(pe, dataBuffer, arch);
   constructRelocs(pe, dataBuffer, arch);
+  strings(pe, dataBuffer);
 
   // DEBUG
   console.log(pe);
@@ -973,6 +974,33 @@ function constructRelocs(pe, dataBuffer, arch) {
   if (arch == 64) {
     pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[5].Pages = relocs;
   }  
+}
+// 32 - 126
+function strings(pe, dataBuffer){
+  const strings = [];
+  let position = 0;
+  let buffer = "";
+  let minLength = 8;
+  let currentLength = 0;
+  let offset = null;
+  while(position < dataBuffer.length){
+    if(dataBuffer[position] < 127 && dataBuffer[position] > 31){
+      buffer += String.fromCharCode(dataBuffer[position]);
+      currentLength += 1;
+      if(offset == null){
+        offset = position;
+      }
+    } else {
+      if(currentLength >= minLength){
+        strings.push({offset, buffer})
+      }
+      buffer = "";
+      currentLength = 0;
+      offset = null;
+    }
+    position += 1;
+  }
+  console.log(strings);
 }
 
 export { analyze, determineArchitecture };

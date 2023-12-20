@@ -18,3 +18,4 @@ Current progress:
 [ ] Improve code quality. Consistent naming conventions, well defined objects, readable code, etc  
 [ ] Basic test coverage
 [ ] Collapsable table sections
+[ ] Add string search to quick information
