@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./QuickInfo.css";
 
 function QuickInfo(props) {
   const info = props.quickInfo;
+  const strings = props.strings;
+  console.log("props strings", strings);
   let descriptors;
   const importsPresent = info.importedDlls != undefined;
   if (importsPresent) {
@@ -10,6 +12,9 @@ function QuickInfo(props) {
   }
   let dllNames;
   let functionNames;
+  let outStrings = [];
+  const [showMoreFunc, setShowMoreFunc] = useState(false);
+  const [showMoreString, setShowMoreString] = useState(false);
 
   if (importsPresent && descriptors != undefined) {
     dllNames = descriptors.map((descriptor, index) => {
@@ -24,24 +29,38 @@ function QuickInfo(props) {
         </div>
       );
     });
-    functionNames = descriptors.map((descriptor, index) => {
-      return (
-        <div key={index}>
-          {descriptor.ImportNameList.map((importName, index) => {
-            return (
-              <div key={index}>
-                {descriptor.NameString}:{" "}
-                {importName.name ? (
-                  importName.name
-                ) : (
-                  <span className="ordinal">Ordinal: {importName.ordinal}</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      );
-    });
+    // functionNames = descriptors.map((descriptor, index) => {
+    //   return (
+    //     <div key={index}>
+    //       {descriptor.ImportNameList.map((importName, index) => {
+    //         return (
+    //           <div key={index}>
+    //             {descriptor.NameString}:{" "}
+    //             {importName.name ? (
+    //               importName.name
+    //             ) : (
+    //               <span className="ordinal">Ordinal: {importName.ordinal}</span>
+    //             )}
+    //           </div>
+    //         );
+    //       })}
+    //     </div>
+    //   );
+    // });
+
+    for (let i = 0; i < descriptors.length; i++) {
+      for (let j = 0; j < descriptors[i].ImportNameList.length; j++) {
+        let string = descriptors[i].NameString + ": ";
+        if (descriptors[i].ImportNameList[j].name) {
+          string += descriptors[i].ImportNameList[j].name;
+        } else {
+          string += descriptors[i].ImportNameList[j].ordinal;
+        }
+        outStrings.push(string);
+      }
+    }
+
+    console.log("func outputs xx ", outStrings);
   }
 
   return (
@@ -71,6 +90,26 @@ function QuickInfo(props) {
               <td>Number of sections</td>
               <td>{parseInt(info.sectionCount, 16)}</td>
             </tr>
+            <tr>
+              <td>Strings</td>
+              <td className="strings">
+                {strings.length < 10
+                  ? strings.map((string) => <div>{string}</div>)
+                  : strings.map((string, index) => {
+                      if (index < 10) {
+                        return <div>{string.offset}: {string.buffer}</div>;
+                      }
+                      if (index >= 10 && showMoreString) {
+                        return <div>{string.offset}: {string.buffer}</div>;
+                      }
+                    })}
+                {!showMoreString && (
+                  <button onClick={() => setShowMoreString(true)}>
+                    Show more...
+                  </button>
+                )}
+              </td>
+            </tr>
             {importsPresent && descriptors != undefined && (
               <>
                 <tr>
@@ -79,7 +118,23 @@ function QuickInfo(props) {
                 </tr>
                 <tr>
                   <td>Imported Functions</td>
-                  <td>{functionNames}</td>
+                  <td>
+                    {outStrings.length < 10
+                      ? outStrings.map((func) => <div>{func}</div>)
+                      : outStrings.map((func, index) => {
+                          if (index < 10) {
+                            return <div>{func}</div>;
+                          }
+                          if (index >= 10 && showMoreFunc) {
+                            return <div>{func}</div>;
+                          }
+                        })}
+                    {!showMoreFunc && (
+                      <button onClick={() => setShowMoreFunc(true)}>
+                        Show more...
+                      </button>
+                    )}
+                  </td>
                 </tr>
               </>
             )}

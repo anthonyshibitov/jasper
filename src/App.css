@@ -142,3 +142,8 @@ th {
   color: orange;
 }
 
+.strings {
+  overflow-wrap: break-word;
+  overflow: auto;
+  width: 50%;
+}

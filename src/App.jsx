@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { analyze, determineArchitecture } from "./peAnalyze";
+import { analyze, determineArchitecture, strings } from "./peAnalyze";
 import { createPe } from "./peDef";
 import DosHeader from "./components/DosHeader";
 import FileHeader from "./components/FileHeader";
@@ -20,6 +20,7 @@ function App() {
   const [arch, setArch] = useState(0);
   const [error, setError] = useState("");
   const [show, setShow] = useState("");
+  const [stringsFunc, setStringsFunc] = useState([]);
 
   useEffect(() => {
     document.title = "JASPER";
@@ -72,6 +73,7 @@ function App() {
               result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
           });
         }
+        setStringsFunc(strings(resultArray, true));
         setShow("quick");
         setRender(true);
       };
@@ -109,7 +111,7 @@ function App() {
       {render == true && error == "" && (
         <div className="content-wrapper">
           <NavBar setShow={setShow} show={show} pe={pe} arch={arch} />
-          {show == "quick" && <QuickInfo quickInfo={quickInfo} />}
+          {show == "quick" && <QuickInfo quickInfo={quickInfo} strings={stringsFunc} />}
           {show == "dos" && (
             <DosHeader
               dosHeader={pe._IMAGE_DOS_HEADER}

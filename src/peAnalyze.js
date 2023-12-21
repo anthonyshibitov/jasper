@@ -52,7 +52,7 @@ function analyze(dataBuffer) {
   constructBoundImports(pe, dataBuffer, arch);
   constructExports(pe, dataBuffer, arch);
   constructRelocs(pe, dataBuffer, arch);
-  strings(pe, dataBuffer);
+  // strings(pe, dataBuffer);
 
   // DEBUG
   console.log(pe);
@@ -976,11 +976,11 @@ function constructRelocs(pe, dataBuffer, arch) {
   }  
 }
 // 32 - 126
-function strings(pe, dataBuffer){
+function strings(dataBuffer, nullTerminated){
   const strings = [];
   let position = 0;
   let buffer = "";
-  let minLength = 8;
+  let minLength = 4;
   let currentLength = 0;
   let offset = null;
   while(position < dataBuffer.length){
@@ -991,8 +991,11 @@ function strings(pe, dataBuffer){
         offset = position;
       }
     } else {
-      if(currentLength >= minLength){
-        strings.push({offset, buffer})
+      if(currentLength >= minLength && dataBuffer[position] == 0x00 && nullTerminated){
+        strings.push({offset, buffer});
+      }
+      if(currentLength >= minLength && !nullTerminated){
+        strings.push({offset, buffer});
       }
       buffer = "";
       currentLength = 0;
@@ -1000,7 +1003,8 @@ function strings(pe, dataBuffer){
     }
     position += 1;
   }
-  console.log(strings);
+  console.log("strings", strings);
+  return strings;
 }
 
-export { analyze, determineArchitecture };
+export { analyze, determineArchitecture, strings };
