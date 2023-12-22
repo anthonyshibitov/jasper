@@ -4,7 +4,6 @@ import "./QuickInfo.css";
 function QuickInfo(props) {
   const info = props.quickInfo;
   const strings = props.strings;
-  console.log("props strings", strings);
   let descriptors;
   const importsPresent = info.importedDlls != undefined;
   if (importsPresent) {
@@ -15,6 +14,8 @@ function QuickInfo(props) {
   let outStrings = [];
   const [showMoreFunc, setShowMoreFunc] = useState(false);
   const [showMoreString, setShowMoreString] = useState(false);
+  let stringTotal = 0;
+  let funcTotal = 0;
 
   if (importsPresent && descriptors != undefined) {
     dllNames = descriptors.map((descriptor, index) => {
@@ -59,8 +60,6 @@ function QuickInfo(props) {
         outStrings.push(string);
       }
     }
-
-    console.log("func outputs xx ", outStrings);
   }
 
   return (
@@ -97,15 +96,18 @@ function QuickInfo(props) {
                   ? strings.map((string) => <div>{string}</div>)
                   : strings.map((string, index) => {
                       if (index < 10) {
-                        return <div>{string.offset}: {string.buffer}</div>;
+                        return <div key={index}>{string.offset}: {string.buffer}</div>;
                       }
                       if (index >= 10 && showMoreString) {
-                        return <div>{string.offset}: {string.buffer}</div>;
+                        return <div key={index}>{string.offset}: {string.buffer}</div>;
+                      }
+                      if (index >= 10 && !showMoreString){
+                        stringTotal += 1;
                       }
                     })}
                 {!showMoreString && (
                   <button onClick={() => setShowMoreString(true)}>
-                    Show more...
+                    Show {stringTotal} more...
                   </button>
                 )}
               </td>
@@ -123,15 +125,18 @@ function QuickInfo(props) {
                       ? outStrings.map((func) => <div>{func}</div>)
                       : outStrings.map((func, index) => {
                           if (index < 10) {
-                            return <div>{func}</div>;
+                            return <div key={index}>{func}</div>;
                           }
                           if (index >= 10 && showMoreFunc) {
-                            return <div>{func}</div>;
+                            return <div key={index}>{func}</div>;
+                          }
+                          if(index >= 10 && !showMoreFunc){
+                            funcTotal += 1;
                           }
                         })}
                     {!showMoreFunc && (
                       <button onClick={() => setShowMoreFunc(true)}>
-                        Show more...
+                        Show {funcTotal} more...
                       </button>
                     )}
                   </td>

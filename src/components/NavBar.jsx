@@ -16,7 +16,10 @@ function NavBar(props){
             }
         }
         if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0] != undefined){
-            if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].VirtualAddress, 16) != 0){
+            // if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].VirtualAddress, 16) != 0){
+            //     hasExports = true;
+            // }
+            if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[0].ExportDirectoryTable?.JASPERexports){
                 hasExports = true;
             }
         }
@@ -33,7 +36,10 @@ function NavBar(props){
             }
         }
         if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0] != undefined){
-            if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].VirtualAddress, 16) != 0){
+            // if(parseInt(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].VirtualAddress, 16) != 0){
+            //     hasExports = true;
+            // }
+            if(pe._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[0].ExportDirectoryTable?.JASPERexports){
                 hasExports = true;
             }
         }

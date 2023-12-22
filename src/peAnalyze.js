@@ -773,8 +773,6 @@ function constructExports(pe, dataBuffer, arch) {
     exportDirectoryTableOffset + 36
   );
 
-  console.log(exportDirectoryTable);
-
   const exportAddressTable = [];
   const exportNameTable = [];
   const exportNameOrdinalsTable = [];
@@ -796,6 +794,16 @@ function constructExports(pe, dataBuffer, arch) {
     pe._IMAGE_SECTION_HEADERS[exportSection].VirtualAddress,
     pe._IMAGE_SECTION_HEADERS[exportSection].PointerToRawData
   );
+
+  //Silent ignores. Offsets are out of bounds
+  if(dataBuffer.length < parseInt(offsetOfFunctions, 16))
+    return;
+
+  if(dataBuffer.length < parseInt(offsetOfNames, 16))
+    return;
+
+  if(dataBuffer.length < parseInt(offsetOfNameOrdinals, 16))
+    return;
 
   for (
     let i = 0;
@@ -1003,7 +1011,6 @@ function strings(dataBuffer, nullTerminated){
     }
     position += 1;
   }
-  console.log("strings", strings);
   return strings;
 }
 
