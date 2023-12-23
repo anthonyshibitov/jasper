@@ -91,7 +91,7 @@ function App() {
       //const array = new ArrayBuffer(10000);
       //const testFile = new File([array], "../public/kernel32.dll.ttf")
 
-      fetch('/public/kernel32.dll')
+      fetch('/kernel32.dll')
         .then(response => {
           return response.blob();
         })
