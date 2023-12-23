@@ -22,62 +22,86 @@ function App() {
   const [show, setShow] = useState("");
   const [stringsFunc, setStringsFunc] = useState([]);
 
+  function processFile(fileInput) {
+    const file = fileInput;
+    setPe(createPe());
+
+    const reader = new FileReader();
+
+    reader.readAsArrayBuffer(file);
+
+    if(!file.name){
+      file.name = "kernel32.dll";
+    }
+
+    reader.onload = () => {
+      const resultArray = new Uint8Array(reader.result);
+
+      setArch(determineArchitecture(resultArray));
+      const archLocal = determineArchitecture(resultArray);
+      let result;
+      if (archLocal == 32 || archLocal == 64) result = analyze(resultArray);
+
+      if (archLocal == -1) {
+        setError(
+          "Selected file is not a valid PE file. The DOS / Optional Header magic values may have been corrupted or changed."
+        );
+        setRender(true);
+        return;
+      }
+
+      setPe(result);
+      setHeaderOffset(result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, ""));
+      if (archLocal == 32) {
+        setQuickInfo({
+          name: file.name,
+          size: file.size,
+          platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
+          sectionCount:
+            result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+          importedDlls:
+            result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1],
+        });
+      }
+      if (archLocal == 64) {
+        setQuickInfo({
+          name: file.name,
+          size: file.size,
+          platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Magic,
+          sectionCount:
+            result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
+          importedDlls:
+            result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
+        });
+      }
+      setStringsFunc(strings(resultArray, true));
+      setShow("quick");
+      setRender(true);
+    };
+  }
+
   useEffect(() => {
     document.title = "JASPER";
     const uploadElement = document.getElementById("file-upload");
     uploadElement.addEventListener("change", () => {
-      const file = uploadElement.files[0];
-      setPe(createPe());
-
-      const reader = new FileReader();
-
-      reader.readAsArrayBuffer(file);
-
-      reader.onload = () => {
-        const resultArray = new Uint8Array(reader.result);
-
-        setArch(determineArchitecture(resultArray));
-        const archLocal = determineArchitecture(resultArray);
-        let result;
-        if (archLocal == 32 || archLocal == 64) result = analyze(resultArray);
-
-        if (archLocal == -1) {
-          setError(
-            "Selected file is not a valid PE file. The DOS / Optional Header magic values may have been corrupted or changed."
-          );
-          setRender(true);
-          return;
-        }
-
-        setPe(result);
-        setHeaderOffset(result._IMAGE_DOS_HEADER.e_lfanew.replace(/^0+/g, ""));
-        if (archLocal == 32) {
-          setQuickInfo({
-            name: file.name,
-            size: file.size,
-            platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.Magic,
-            sectionCount:
-              result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
-            importedDlls:
-              result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER32.DataDirectory[1],
-          });
-        }
-        if (archLocal == 64) {
-          setQuickInfo({
-            name: file.name,
-            size: file.size,
-            platform: result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.Magic,
-            sectionCount:
-              result._IMAGE_NT_HEADER._IMAGE_FILE_HEADER.NumberOfSections,
-            importedDlls:
-              result._IMAGE_NT_HEADER._IMAGE_OPTIONAL_HEADER64.DataDirectory[1],
-          });
-        }
-        setStringsFunc(strings(resultArray, true));
-        setShow("quick");
-        setRender(true);
-      };
+      processFile(uploadElement.files[0]);
     });
+    const uploadTestElement = document.getElementById("test-upload-wrapper");
+    uploadTestElement.addEventListener("click", () => {
+      //const array = new ArrayBuffer(10000);
+      //const testFile = new File([array], "../public/kernel32.dll.ttf")
+
+      fetch('/public/kernel32.dll')
+        .then(response => {
+          return response.blob();
+        })
+        .then(blob => {
+          processFile(blob);
+        })
+
+      //processFile(testFile);
+    })
+
   }, []);
 
   return (
@@ -96,22 +120,38 @@ function App() {
               <input type="file" name="file-upload" id="file-upload" />
               Upload PE File
             </label>
+            <label id="test-upload-wrapper">Upload test file</label>
             <div className="button-under-label">made by sasha... :D</div>
           </div>
           <div className="info-wrapper">
             <div className="info-header">What is this?</div>
-            <span>JASPER is a Portable Executable reversing tool for 32 and 64-bit files implemented entirely in JavaScript. Wanna run it locally? Fork me on <a href="https://github.com/anthonyshibitov/jasper">Github!</a></span>
+            <span>
+              JASPER is a Portable Executable reversing tool for 32 and 64-bit
+              files implemented entirely in JavaScript. Wanna run it locally?
+              Fork me on{" "}
+              <a href="https://github.com/anthonyshibitov/jasper">Github!</a>
+            </span>
             <div className="info-header">What does it support?</div>
-            <span>Currently it will parse 32 and 64 bit PE files. It should be able to successfully parse most files as long as they aren't extremely malformed. If your file doesn't process, please consider opening an issue on <a href="https://github.com/anthonyshibitov/jasper">Github</a> so it can be fixed.</span>
+            <span>
+              Currently it will parse 32 and 64 bit PE files. It should be able
+              to successfully parse most files as long as they aren't extremely
+              malformed. If your file doesn't process, please consider opening
+              an issue on{" "}
+              <a href="https://github.com/anthonyshibitov/jasper">Github</a> so
+              it can be fixed.
+            </span>
             <div className="info-header">Contact</div>
-            My email is available on my Github profile. Psst.. I'm currently looking for work! :)
+            My email is available on my Github profile. Psst.. I'm currently
+            looking for work! :)
           </div>
         </>
       )}
       {render == true && error == "" && (
         <div className="content-wrapper">
           <NavBar setShow={setShow} show={show} pe={pe} arch={arch} />
-          {show == "quick" && <QuickInfo quickInfo={quickInfo} strings={stringsFunc} />}
+          {show == "quick" && (
+            <QuickInfo quickInfo={quickInfo} strings={stringsFunc} />
+          )}
           {show == "dos" && (
             <DosHeader
               dosHeader={pe._IMAGE_DOS_HEADER}

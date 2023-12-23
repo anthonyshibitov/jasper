@@ -16,6 +16,6 @@ Current progress:
 [X] Add visual indication in section headers when a field is null  
 [X] Support relocs  
 [ ] Improve code quality. Consistent naming conventions, well defined objects, readable code, etc  
-[ ] Basic test coverage
-[ ] Collapsable table sections
-[ ] Add string search to quick information
+[ ] Basic test coverage  
+[ ] Collapsable table sections  
+[X] Add string search to quick information

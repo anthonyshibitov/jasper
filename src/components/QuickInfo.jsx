@@ -96,10 +96,10 @@ function QuickInfo(props) {
                   ? strings.map((string) => <div>{string}</div>)
                   : strings.map((string, index) => {
                       if (index < 10) {
-                        return <div key={index}>{string.offset}: {string.buffer}</div>;
+                        return <div key={index}>0x{(string.offset).toString(16)}: {string.buffer}</div>;
                       }
                       if (index >= 10 && showMoreString) {
-                        return <div key={index}>{string.offset}: {string.buffer}</div>;
+                        return <div key={index}>0x{(string.offset).toString(16)}: {string.buffer}</div>;
                       }
                       if (index >= 10 && !showMoreString){
                         stringTotal += 1;

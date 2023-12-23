@@ -38,9 +38,30 @@ input[type="file"] {
   cursor: pointer;
 }
 
+#test-upload-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 0.8rem;
+  width: 6rem;
+  border-radius: 5px;
+  color: white;
+  background-color: var(--dark-bg);
+  font-weight: bolder;
+  padding: 0.25rem;
+  margin: 0.25rem;
+  cursor: pointer;
+  font-size: 0.5rem;
+}
+
 #file-upload-wrapper:hover {
   background-color: white;
   color: var(--accent);
+}
+
+#test-upload-wrapper:hover {
+  background-color: white;
+  color: var(--dark-bg);
 }
 
 input {
