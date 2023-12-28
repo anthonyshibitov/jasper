@@ -96,7 +96,7 @@ function QuickInfo(props) {
               <td>Strings</td>
               <td className="strings">
                 {strings.length < 10
-                  ? strings.map((string) => <div>{string}</div>)
+                  ? strings.map((string) => <div>{string.offset.toString(16)}: {string.buffer}</div>)
                   : strings.map((string, index) => {
                       if (index < 10) {
                         return (
