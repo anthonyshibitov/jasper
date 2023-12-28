@@ -88,8 +88,6 @@ function App() {
     });
     const uploadTestElement = document.getElementById("test-upload-wrapper");
     uploadTestElement.addEventListener("click", () => {
-      //const array = new ArrayBuffer(10000);
-      //const testFile = new File([array], "../public/kernel32.dll.ttf")
 
       fetch('/kernel32.dll')
         .then(response => {

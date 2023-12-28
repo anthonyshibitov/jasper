@@ -14,8 +14,10 @@ function QuickInfo(props) {
   let outStrings = [];
   const [showMoreFunc, setShowMoreFunc] = useState(false);
   const [showMoreString, setShowMoreString] = useState(false);
+  const [showMoreDll, setShowMoreDll] = useState(false);
   let stringTotal = 0;
   let funcTotal = 0;
+  let dllTotal = 0;
 
   if (importsPresent && descriptors != undefined) {
     dllNames = descriptors.map((descriptor, index) => {
@@ -23,12 +25,13 @@ function QuickInfo(props) {
       if (descriptor.TimeDateStamp == "FFFFFFFF") {
         bound = true;
       }
-      return (
-        <div key={index}>
-          {descriptor.NameString}{" "}
-          {bound && <span className="ordinal">BOUND</span>}
-        </div>
-      );
+      // return (
+      //   <div key={index}>
+      //     {descriptor.NameString}{" "}
+      //     {bound && <span className="ordinal">BOUND</span>}
+      //   </div>
+      // );
+      return { name: descriptor.NameString, bound: bound };
     });
     // functionNames = descriptors.map((descriptor, index) => {
     //   return (
@@ -96,16 +99,24 @@ function QuickInfo(props) {
                   ? strings.map((string) => <div>{string}</div>)
                   : strings.map((string, index) => {
                       if (index < 10) {
-                        return <div key={index}>0x{(string.offset).toString(16)}: {string.buffer}</div>;
+                        return (
+                          <div key={index}>
+                            0x{string.offset.toString(16)}: {string.buffer}
+                          </div>
+                        );
                       }
                       if (index >= 10 && showMoreString) {
-                        return <div key={index}>0x{(string.offset).toString(16)}: {string.buffer}</div>;
+                        return (
+                          <div key={index}>
+                            0x{string.offset.toString(16)}: {string.buffer}
+                          </div>
+                        );
                       }
-                      if (index >= 10 && !showMoreString){
+                      if (index >= 10 && !showMoreString) {
                         stringTotal += 1;
                       }
                     })}
-                {!showMoreString && (
+                {!showMoreString && stringTotal > 10 && (
                   <button onClick={() => setShowMoreString(true)}>
                     Show {stringTotal} more...
                   </button>
@@ -116,7 +127,47 @@ function QuickInfo(props) {
               <>
                 <tr>
                   <td>Imported DLLs</td>
-                  <td>{dllNames}</td>
+                  <td>
+                    {dllNames.length < 10
+                      ? dllNames.map((dll, index) => (
+                          <div>
+                            {dll.name}
+                            {dll.bound && (
+                              <span className="ordinal"> BOUND</span>
+                            )}
+                          </div>
+                        ))
+                      : dllNames.map((dll, index) => {
+                          if (index < 10) {
+                            return (
+                              <div>
+                                {dll.name}
+                                {dll.bound && (
+                                  <span className="ordinal"> BOUND</span>
+                                )}
+                              </div>
+                            );
+                          }
+                          if (index >= 10 && showMoreDll) {
+                            return (
+                              <div>
+                                {dll.name}
+                                {dll.bound && (
+                                  <span className="ordinal"> BOUND</span>
+                                )}
+                              </div>
+                            );
+                          }
+                          if (index >= 10 && !showMoreDll) {
+                            dllTotal += 1;
+                          }
+                        })}
+                    {!showMoreDll && dllTotal > 10 && (
+                      <button onClick={() => setShowMoreDll(true)}>
+                        Show {dllTotal} more...
+                      </button>
+                    )}
+                  </td>
                 </tr>
                 <tr>
                   <td>Imported Functions</td>
@@ -130,11 +181,11 @@ function QuickInfo(props) {
                           if (index >= 10 && showMoreFunc) {
                             return <div key={index}>{func}</div>;
                           }
-                          if(index >= 10 && !showMoreFunc){
+                          if (index >= 10 && !showMoreFunc) {
                             funcTotal += 1;
                           }
                         })}
-                    {!showMoreFunc && (
+                    {!showMoreFunc && funcTotal > 10 && (
                       <button onClick={() => setShowMoreFunc(true)}>
                         Show {funcTotal} more...
                       </button>
